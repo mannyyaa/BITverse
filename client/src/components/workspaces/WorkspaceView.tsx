@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import {
   MousePointer2, Hand, Link2, MessageSquarePlus, Zap,
   RotateCcw, RotateCw, Users, Clock, MessageCircle, PanelLeft, X,
@@ -19,6 +19,10 @@ import { useSimulationStore } from "@/store/simulationStore";
 
 export function WorkspaceView() {
   const workspace     = useWorkspaceStore((s) => s.workspace);
+  const undoGraph     = useWorkspaceStore((s) => s.undoGraph);
+  const redoGraph     = useWorkspaceStore((s) => s.redoGraph);
+  const canUndo       = useWorkspaceStore((s) => s.pastGraphStates.length > 0);
+  const canRedo       = useWorkspaceStore((s) => s.futureGraphStates.length > 0);
   const {
     activeTool, setActiveTool,
     activePanel, setActivePanel,
@@ -32,14 +36,35 @@ export function WorkspaceView() {
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.key === "v" || e.key === "V") setActiveTool("select");
-      if (e.key === "h" || e.key === "H") setActiveTool("pan");
-      if (e.key === "c" || e.key === "C") setActiveTool("connect");
+      const target = e.target;
+      const isTyping =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        (target instanceof HTMLElement && target.isContentEditable);
+      if (isTyping) return;
+
+      const key = e.key.toLowerCase();
+      const hasCommandModifier = e.metaKey || e.ctrlKey;
+      if (hasCommandModifier && key === "z") {
+        e.preventDefault();
+        if (e.shiftKey) redoGraph();
+        else undoGraph();
+        return;
+      }
+      if (hasCommandModifier && key === "y") {
+        e.preventDefault();
+        redoGraph();
+        return;
+      }
+
+      if (key === "v") setActiveTool("select");
+      if (key === "h") setActiveTool("pan");
+      if (key === "c") setActiveTool("connect");
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [setActiveTool]);
+  }, [setActiveTool, undoGraph, redoGraph]);
 
   const tools: { id: ActiveTool; icon: React.ReactNode; label: string; shortcut: string }[] = [
     { id: "select",   icon: <MousePointer2 size={15} />, label: "Select & Move", shortcut: "V" },
@@ -58,6 +83,7 @@ export function WorkspaceView() {
 
   return (
     <div
+      className="bv-workspace"
       style={{
         display: "flex",
         flexDirection: "column",
@@ -68,6 +94,7 @@ export function WorkspaceView() {
     >
       {/* ── Topbar ──────────────────────────────────────────────────────── */}
       <header
+        className="bv-workspace-header"
         style={{
           height: 46,
           display: "flex",
@@ -86,7 +113,7 @@ export function WorkspaceView() {
         <Divider />
 
         {/* Workspace breadcrumb */}
-        <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
+        <div className="bv-workspace-breadcrumb" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, minWidth: 0 }}>
           <span
             style={{
               color: "var(--accent-violet)",
@@ -97,7 +124,7 @@ export function WorkspaceView() {
             {workspace.name}
           </span>
           <span style={{ color: "var(--text-tertiary)" }}>·</span>
-          <span style={{ color: "var(--text-secondary)" }}>{workspace.description}</span>
+          <span className="bv-workspace-description" style={{ color: "var(--text-secondary)" }}>{workspace.description}</span>
         </div>
 
         {/* Saved indicator */}
@@ -106,13 +133,13 @@ export function WorkspaceView() {
         <div style={{ flex: 1 }} />
 
         {/* Undo / Redo */}
-        <TopBtn icon={<RotateCcw size={13} />} label="Undo (⌘Z)"    onClick={() => {}} />
-        <TopBtn icon={<RotateCw  size={13} />} label="Redo (⌘⇧Z)"   onClick={() => {}} />
+        <TopBtn icon={<RotateCcw size={13} />} label="Undo (⌘Z)" disabled={!canUndo} onClick={undoGraph} />
+        <TopBtn icon={<RotateCw  size={13} />} label="Redo (⌘⇧Z)" disabled={!canRedo} onClick={redoGraph} />
 
         <Divider />
 
         {/* Collaborator avatars */}
-        <div style={{ display: "flex", alignItems: "center" }}>
+        <div className="bv-collaborator-list" style={{ display: "flex", alignItems: "center" }}>
           {workspace.collaborators.map((c, i) => (
             <div key={c.id} style={{ marginLeft: i === 0 ? 0 : -6, zIndex: workspace.collaborators.length - i }}>
               <Avatar name={c.name} color={c.color} initials={c.initials} size={24} online={c.online} />
@@ -121,6 +148,7 @@ export function WorkspaceView() {
         </div>
 
         <button
+          className="bv-invite-btn"
           onClick={() => setInviteDialogOpen(true)}
           style={{
             display: "flex", alignItems: "center", gap: 5,
@@ -140,6 +168,7 @@ export function WorkspaceView() {
 
         {/* Break the System */}
         <button
+          className="bv-failure-lab-btn"
           onClick={() => setFailureLabOpen(true)}
           aria-label="Open Failure Lab"
           style={{
@@ -162,7 +191,7 @@ export function WorkspaceView() {
       </header>
 
       {/* ── Body ────────────────────────────────────────────────────────── */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+      <div className="bv-workspace-body" style={{ display: "flex", flex: 1, overflow: "hidden", minHeight: 0 }}>
 
         {/* ── Left toolbar ────────────────────────────────────────────── */}
         <div
@@ -252,11 +281,12 @@ function RightArea() {
   };
 
   return (
-    <div style={{ display: "flex", height: "100%", overflow: "hidden" }}>
+    <div className="bv-workspace-right-area" style={{ display: "flex", height: "100%", overflow: "hidden" }}>
       {selectedId && <Inspector />}
 
       {activePanel && (
         <div
+          className="bv-workspace-side-panel"
           style={{
             width: 290,
             height: "100%",
@@ -376,6 +406,7 @@ function BITverseLogo() {
 function Divider() {
   return (
     <div
+      className="bv-workspace-divider"
       aria-hidden
       style={{
         width: 1,
@@ -460,16 +491,21 @@ function TopBtn({
   icon,
   label,
   onClick,
+  disabled = false,
 }: {
   icon: React.ReactNode;
   label: string;
   onClick: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
+      className="bv-top-btn"
       onClick={onClick}
       title={label}
       aria-label={label}
+      disabled={disabled}
+      aria-disabled={disabled}
       style={{
         width: 26,
         height: 26,
@@ -477,7 +513,8 @@ function TopBtn({
         background: "none",
         border: "none",
         color: "var(--text-tertiary)",
-        cursor: "pointer",
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.38 : 1,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -492,6 +529,9 @@ function TopBtn({
 function SavedBadge() {
   return (
     <span
+      className="bv-saved-badge"
+      title="Automatically saved in this browser only — not synced to other collaborators yet."
+      aria-label="Workspace saved locally in this browser"
       style={{
         fontSize: 10,
         color: "var(--accent-green)",
@@ -500,17 +540,20 @@ function SavedBadge() {
         display: "flex",
         alignItems: "center",
         gap: 4,
+        whiteSpace: "nowrap",
       }}
     >
       <span
+        aria-hidden="true"
         style={{
           width: 5,
           height: 5,
           borderRadius: "50%",
           background: "var(--accent-green)",
+          boxShadow: "0 0 0 3px color-mix(in srgb, var(--accent-green) 12%, transparent)",
         }}
       />
-      Saved
+      Saved locally
     </span>
   );
 }

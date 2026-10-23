@@ -6,7 +6,8 @@ import { Avatar } from "@/components/ui/Avatar";
 
 export function InviteDialog() {
   const isOpen = useUIStore((s) => s.isInviteDialogOpen);
-  const close  = useUIStore((s) => () => s.setInviteDialogOpen(false));
+  const setInviteDialogOpen = useUIStore((s) => s.setInviteDialogOpen);
+  const close = () => setInviteDialogOpen(false);
   const workspace = useWorkspaceStore((s) => s.workspace);
 
   const [email, setEmail]   = useState("");

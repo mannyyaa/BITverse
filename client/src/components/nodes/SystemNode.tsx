@@ -45,9 +45,9 @@ export const SystemNode = memo(function SystemNode({ id, data, selected }: NodeP
   const boxShadow = selected
     ? "var(--shadow-md), var(--glow-violet)"
     : isDown
-    ? `0 0 0 3px rgba(214,48,49,.14), var(--shadow-sm)`
+    ? `0 0 0 3px color-mix(in srgb, var(--status-down) 14%, transparent), var(--shadow-sm)`
     : isDegraded
-    ? `0 0 0 3px rgba(225,112,85,.12), var(--shadow-sm)`
+    ? `0 0 0 3px color-mix(in srgb, ${sColor} 12%, transparent), var(--shadow-sm)`
     : hovered
     ? "var(--shadow-md)"
     : "var(--shadow-xs)";
@@ -215,13 +215,13 @@ export const SystemNode = memo(function SystemNode({ id, data, selected }: NodeP
               style={{
                 marginLeft: "auto",
                 fontSize: 8,
-                background: "rgba(214,48,49,.1)",
+                background: "color-mix(in srgb, var(--status-down) 10%, transparent)",
                 color: "var(--status-down)",
                 borderRadius: "var(--r-xs)",
                 padding: "1px 4px",
                 fontFamily: "var(--font-mono)",
                 fontWeight: 700,
-                border: "1px solid rgba(214,48,49,.2)",
+                border: "1px solid color-mix(in srgb, var(--status-down) 22%, transparent)",
               }}
             >
               ✕ DOWN

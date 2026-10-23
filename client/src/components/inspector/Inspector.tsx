@@ -15,13 +15,15 @@ export function Inspector() {
   const node   = useWorkspaceStore((s) =>
     selectedNodeId ? s.workspace.graph.nodes.find((n) => n.id === selectedNodeId) : null,
   );
-  const queries = useWorkspaceStore((s) =>
-    selectedNodeId
-      ? s.workspace.queries.filter(
-          (q) => q.target.kind === "node" && q.target.id === selectedNodeId,
-        )
-      : [],
-  );
+  // Select the stable query array from Zustand first. In Zustand v5 / React 19,
+  // returning a freshly filtered array from a store selector can cause an
+  // uncached getSnapshot result and an update loop when a node is selected.
+  const workspaceQueries = useWorkspaceStore((s) => s.workspace.queries);
+  const queries = selectedNodeId
+    ? workspaceQueries.filter(
+        (q) => q.target.kind === "node" && q.target.id === selectedNodeId,
+      )
+    : [];
   const updateNode = useWorkspaceStore((s) => s.updateNode);
 
   const [editLabel, setEditLabel] = useState(false);
@@ -39,6 +41,7 @@ export function Inspector() {
 
   return (
     <div
+      className="bv-inspector"
       style={{
         width: 252,
         height: "100%",

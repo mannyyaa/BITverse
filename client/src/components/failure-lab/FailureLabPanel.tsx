@@ -15,8 +15,9 @@ const DIFFICULTY_COLOR: Record<string, string> = {
 };
 
 export function FailureLabPanel() {
-  const isOpen  = useUIStore((s) => s.isFailureLabOpen);
-  const close   = useUIStore((s) => () => s.setFailureLabOpen(false));
+  const isOpen = useUIStore((s) => s.isFailureLabOpen);
+  const setFailureLabOpen = useUIStore((s) => s.setFailureLabOpen);
+  const close = () => setFailureLabOpen(false);
   const graph   = useWorkspaceStore((s) => s.workspace.graph);
   const scenarios = useWorkspaceStore((s) => s.workspace.scenarios);
   const addTimeline = useWorkspaceStore((s) => s.addTimelineEvent);

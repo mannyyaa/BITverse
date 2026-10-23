@@ -123,10 +123,9 @@ export function ArchPreview() {
           }}
         />
         <svg
-          width={676}
-          height={290}
+          width="100%"
           viewBox="0 0 676 290"
-          style={{ position: "relative", zIndex: 1, display: "block" }}
+          style={{ position: "relative", zIndex: 1, display: "block", height: "auto", aspectRatio: "676 / 290", maxWidth: "100%" }}
         >
           <defs>
             <marker id="arr-lt" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
@@ -173,7 +172,14 @@ export function ArchPreview() {
                 onClick={() => setSelected(node.id === selected ? null : node.id)}
                 style={{ cursor: "pointer" }}
                 role="button"
-                aria-label={node.label}
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setSelected(node.id === selected ? null : node.id);
+                  }
+                }}
+                aria-label={`${node.label}, ${node.metric}${node.warning ? ", capacity warning" : ""}`}
               >
                 <rect
                   width={NW}

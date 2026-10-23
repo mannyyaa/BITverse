@@ -1,33 +1,42 @@
-# BITverse
-Build It Together — A collaborative multiplayer sandbox for designing, discussing, and stress-testing software architectures.
+# BITverse — Build It Together
 
-## Quickstart
+BITverse is a collaborative system-design sandbox for mapping architecture, discussing design decisions, and exploring failure scenarios.
+
+## Run the frontend
+
+Run these commands from the repository root:
 
 ```bash
-npm install      # install dependencies (React + Vite + TS only, for now)
-npm run dev      # start dev server at http://localhost:5173
-npm run build    # typecheck + production build
-npm run typecheck
+npm install
+npm run dev
 ```
 
-## Project structure
+Vite serves the active frontend at `http://localhost:5173` (or prints another local URL if that port is busy).
 
-Feature-sliced layout. `src/domain/` is the shared contract; `src/engine/` is
-pure, React-free logic; `src/store/` and `src/collaboration/` are seams for
-future real-time multiplayer (local Zustand today, Yjs-backed later).
+Useful commands:
 
-```
-src/
-├── app/            shell, routing, providers
-├── features/       vertical product slices (canvas, queries, failureLab, timeline, landing)
-├── engine/         pure simulation + graph logic (no React)
-├── store/          state layer — collaboration seam (Zustand, later Yjs)
-├── collaboration/  future real-time layer (Yjs) — seam only
-├── domain/         shared types — single source of truth
-├── lib/            generic utils
-└── styles/         global CSS
+```bash
+npm run build       # TypeScript project build + Vite production build for client/
+npm run typecheck   # Type-check the client project
 ```
 
-Build phases: (1) foundation [done] → (2) canvas core → (3) queries →
-(4) failure lab → (5) timeline → (6) landing → (7) real-time collab → (8) polish.
+## Repository layout
 
+```text
+client/   Active React + TypeScript + Vite frontend
+server/   Reserved for the future backend phase; currently a placeholder
+src/      Legacy root-level snapshot retained temporarily during the client/ migration
+```
+
+**Use `client/src/` for frontend work.** The root `package.json` runs the `client` workspace, so root-level `src/` is not the active Vite entry point. Keep the duplicate root files until the client build has been verified and you are ready to clean up the repository in a separate change.
+
+## Current product areas
+
+- Landing page and Pulse Commerce architecture preview
+- Workspace dashboard and architecture canvas (React Flow)
+- Component library and inspector
+- Node-attached queries and discussions
+- Deterministic, graph-based failure simulations
+- Timeline and local Zustand state
+
+The current app uses local demo state. Real cloud persistence and live multiplayer collaboration are future backend/collaboration work; the visual presence shown in the prototype should not be treated as a real-time network session.

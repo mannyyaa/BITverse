@@ -50,6 +50,7 @@ export function ComponentLibrary() {
 
   return (
     <div
+      className="bv-component-library"
       style={{
         width: 216,
         height: "100%",

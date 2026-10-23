@@ -1,474 +1,293 @@
-import { useState, useEffect } from "react";
-import { ArrowRight, MessageCircle, TrendingUp, Users } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
+import {
+  Activity,
+  ArrowDownRight,
+  ArrowRight,
+  ArrowUpRight,
+  GitBranch,
+  History,
+  Layers3,
+  MessageSquareText,
+  ShieldAlert,
+  Sparkles,
+  Users,
+  Workflow,
+  Zap,
+} from "lucide-react";
 import { useUIStore } from "@/store/uiStore";
 import { ArchPreview } from "./ArchPreview";
+import "./LandingPage.css";
+
+type Feature = {
+  number: string;
+  title: string;
+  description: string;
+  color: "lilac" | "blue" | "peach" | "sage";
+  icon: ReactNode;
+  tag: string;
+};
+
+const FEATURES: Feature[] = [
+  {
+    number: "01",
+    title: "Shape the system",
+    description: "Turn boxes and arrows into an explorable architecture. Add services, connect dependencies, and give every component a purpose.",
+    color: "lilac",
+    icon: <Workflow size={19} strokeWidth={1.8} />,
+    tag: "BUILD",
+  },
+  {
+    number: "02",
+    title: "Make decisions visible",
+    description: "Attach questions to the exact component they concern. Keep trade-offs, replies, and open decisions close to the design.",
+    color: "blue",
+    icon: <MessageSquareText size={19} strokeWidth={1.8} />,
+    tag: "DISCUSS",
+  },
+  {
+    number: "03",
+    title: "Pressure-test assumptions",
+    description: "Explore database outages, traffic spikes, and service failures before they surprise you in production.",
+    color: "peach",
+    icon: <ShieldAlert size={19} strokeWidth={1.8} />,
+    tag: "BREAK",
+  },
+  {
+    number: "04",
+    title: "Keep the reasoning",
+    description: "Follow the path from an early sketch to a stronger architecture with a timeline of meaningful changes.",
+    color: "sage",
+    icon: <History size={19} strokeWidth={1.8} />,
+    tag: "EVOLVE",
+  },
+];
+
+const STEPS = [
+  { number: "01", title: "Map it out", body: "Start with a template or a blank canvas. Place the building blocks." },
+  { number: "02", title: "Ask better questions", body: "Turn uncertainty into a discussion attached to the architecture." },
+  { number: "03", title: "Try to break it", body: "Run a what-if scenario and inspect which dependencies are affected." },
+  { number: "04", title: "Make it stronger", body: "Capture the decision and evolve the design with intent." },
+];
 
 export function LandingPage() {
   const setView = useUIStore((s) => s.setView);
+  const setFailureLabOpen = useUIStore((s) => s.setFailureLabOpen);
   const [scrolled, setScrolled] = useState(false);
+  const openWorkspace = () => setView("workspace");
+  const openFailureLab = () => {
+    setFailureLabOpen(true);
+    setView("workspace");
+  };
 
   useEffect(() => {
-    const h = () => setScrolled(window.scrollY > 16);
-    window.addEventListener("scroll", h, { passive: true });
-    return () => window.removeEventListener("scroll", h);
+    const handleScroll = () => setScrolled(window.scrollY > 12);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "var(--surface-0)",
-        color: "var(--text-primary)",
-        overflowX: "hidden",
-      }}
-    >
-      {/* ── Nav ─────────────────────────────────────────────────────────── */}
-      <nav
-        style={{
-          position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-          height: 52,
-          background: scrolled ? "rgba(255,255,255,.9)" : "transparent",
-          borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent",
-          backdropFilter: scrolled ? "blur(12px)" : "none",
-          display: "flex", alignItems: "center",
-          padding: "0 40px", gap: 32,
-          transition: "all 0.2s",
-        }}
-      >
-        <NavLogo />
-        <div style={{ flex: 1 }} />
-        <NavLinks />
-        <button
-          onClick={() => setView("dashboard")}
-          style={{ background: "none", border: "none", color: "var(--text-secondary)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-ui)" }}
-        >
-          Sign in
-        </button>
-        <button
-          onClick={() => setView("workspace")}
-          style={{
-            padding: "7px 18px",
-            background: "var(--accent-violet)",
-            border: "none", borderRadius: "var(--r-sm)",
-            color: "#fff", fontSize: 13, fontWeight: 600,
-            cursor: "pointer", fontFamily: "var(--font-ui)",
-          }}
-        >
-          Start Building
-        </button>
+    <main className="bv-landing">
+      <nav className={`bv-nav${scrolled ? " bv-nav--scrolled" : ""}`} aria-label="Main navigation">
+        <a className="bv-brand" href="#top" aria-label="BITverse home">
+          <span className="bv-brand-mark"><Layers3 size={19} strokeWidth={2.1} /></span>
+          <span className="bv-brand-word"><strong>BIT</strong>verse</span>
+          <span className="bv-brand-divider" />
+          <span className="bv-brand-caption">Build it together</span>
+        </a>
+
+        <div className="bv-nav-links">
+          <a href="#features">The canvas</a>
+          <a href="#workflow">How it works</a>
+          <a href="#failure-lab">Failure lab</a>
+        </div>
+
+        <div className="bv-nav-actions">
+          <button className="bv-nav-signin" onClick={() => setView("dashboard")}>Open dashboard</button>
+          <button className="bv-button bv-button--nav" onClick={() => setView("workspace")}>
+            Start building <ArrowUpRight size={15} />
+          </button>
+        </div>
       </nav>
 
-      {/* ── Hero ────────────────────────────────────────────────────────── */}
-      <section
-        style={{
-          minHeight: "100vh",
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          alignItems: "center",
-          gap: 48,
-          padding: "110px 80px 80px",
-          maxWidth: 1280,
-          margin: "0 auto",
-        }}
-      >
-        {/* Left */}
-        <div>
-          {/* Eyebrow */}
-          <div
-            style={{
-              display: "inline-flex", alignItems: "center", gap: 6,
-              padding: "4px 12px",
-              background: "rgba(108,92,231,.08)",
-              border: "1px solid rgba(108,92,231,.2)",
-              borderRadius: "var(--r-full)",
-              marginBottom: 22,
-            }}
-          >
-            <span
-              style={{
-                width: 5, height: 5, borderRadius: "50%",
-                background: "var(--accent-violet)",
-              }}
-            />
-            <span
-              style={{
-                fontSize: 10, fontWeight: 700,
-                color: "var(--accent-violet)",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-              }}
-            >
-              The Collaborative System Design Lab
-            </span>
-          </div>
-
-          {/* Headline */}
-          <h1
-            style={{
-              fontFamily: "var(--font-head)",
-              fontSize: "clamp(34px, 4.5vw, 52px)",
-              fontWeight: 800,
-              lineHeight: 1.1,
-              letterSpacing: "-0.03em",
-              marginBottom: 18,
-              color: "var(--text-primary)",
-            }}
-          >
-            Great systems aren't drawn.{" "}
-            <span
-              style={{
-                background: "linear-gradient(135deg, var(--accent-violet) 0%, var(--accent-cyan) 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              They're built together.
-            </span>
-          </h1>
-
-          <p
-            style={{
-              fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.7,
-              marginBottom: 30, maxWidth: 460,
-            }}
-          >
-            Design software architectures on a shared canvas. Question every decision.
-            Break your system safely. Build something more resilient — together.
+      <section className="bv-hero" id="top">
+        <div className="bv-hero-orb bv-hero-orb--one" aria-hidden="true" />
+        <div className="bv-hero-orb bv-hero-orb--two" aria-hidden="true" />
+        <svg className="bv-spectrum-flow bv-spectrum-flow--hero" viewBox="0 0 1510 470" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="bv-hero-spectrum" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#8c5cf6" />
+              <stop offset="22%" stopColor="#387df2" />
+              <stop offset="42%" stopColor="#19c7df" />
+              <stop offset="63%" stopColor="#df49c5" />
+              <stop offset="82%" stopColor="#ff5d82" />
+              <stop offset="100%" stopColor="#ff9857" />
+            </linearGradient>
+          </defs>
+          <g fill="none" stroke="url(#bv-hero-spectrum)" strokeLinecap="round">
+            {Array.from({ length: 13 }, (_, index) => (
+              <path
+                key={index}
+                d="M -80 90 C 110 250 205 280 370 175 S 610 5 755 155 S 1010 340 1170 170 S 1350 30 1510 108"
+                transform={`translate(0 ${index * 13})`}
+                strokeWidth="3.2"
+                opacity={0.82 - index * 0.025}
+              />
+            ))}
+            <path d="M -80 90 C 110 250 205 280 370 175 S 610 5 755 155 S 1010 340 1170 170 S 1350 30 1510 108" transform="translate(0 78)" strokeWidth="22" opacity=".14" />
+          </g>
+        </svg>
+        <div className="bv-hero-copy">
+          <div className="bv-eyebrow bv-eyebrow--hero"><span className="bv-eyebrow-spark"><Sparkles size={13} /></span> THE SYSTEM DESIGN WORKSPACE</div>
+          <h1>Architecture is a team <span>sport.</span></h1>
+          <p className="bv-hero-lede">
+            Great systems come from better conversations. Sketch the architecture, question the decisions,
+            and see how it holds up when things go wrong.
           </p>
-
-          <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 18 }}>
-            <button
-              onClick={() => setView("workspace")}
-              style={{
-                display: "flex", alignItems: "center", gap: 8,
-                padding: "12px 24px",
-                background: "var(--accent-violet)",
-                border: "none", borderRadius: "var(--r-md)",
-                color: "#fff", fontSize: 14, fontWeight: 700,
-                cursor: "pointer", fontFamily: "var(--font-ui)",
-                boxShadow: "0 4px 20px rgba(108,92,231,.3)",
-              }}
-            >
-              Enter the Verse <ArrowRight size={15} />
+          <div className="bv-hero-actions">
+            <button className="bv-button bv-button--primary" onClick={openWorkspace}>
+              Enter the canvas <ArrowRight size={16} />
             </button>
-            <button
-              onClick={() => setView("workspace")}
-              style={{
-                display: "flex", alignItems: "center", gap: 6,
-                padding: "12px 20px",
-                background: "var(--surface-2)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--r-md)",
-                color: "var(--text-secondary)", fontSize: 14,
-                cursor: "pointer", fontFamily: "var(--font-ui)",
-              }}
-            >
-              Explore a Live Architecture
-            </button>
+            <a className="bv-button bv-button--quiet" href="#workflow">
+              <span className="bv-play-icon"><ArrowDownRight size={15} /></span> See how it works
+            </a>
           </div>
-          <p style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
-            One canvas.&nbsp; Shared ideas.&nbsp; Better systems.
-          </p>
+          <div className="bv-hero-proof">
+            <div className="bv-proof-avatars" aria-hidden="true">
+              <span className="bv-proof-avatar bv-proof-avatar--lilac">A</span>
+              <span className="bv-proof-avatar bv-proof-avatar--blue">R</span>
+              <span className="bv-proof-avatar bv-proof-avatar--sage">Y</span>
+              <span className="bv-proof-avatar bv-proof-avatar--peach"><Users size={12} /></span>
+            </div>
+            <div className="bv-proof-copy"><strong>From first sketch to failure test</strong><span>One space for the whole design journey.</span></div>
+          </div>
+          <div className="bv-hero-footnote"><span className="bv-live-dot" /> Interactive prototype <span className="bv-footnote-separator">·</span> No setup required</div>
         </div>
 
-        {/* Right: preview */}
-        <ArchPreview />
+        <div className="bv-hero-visual">
+          <div className="bv-visual-glow" aria-hidden="true" />
+          <div className="bv-visual-label bv-visual-label--top"><span className="bv-label-icon"><Activity size={14} /></span><span><strong>Pulse Commerce</strong><small>Architecture map</small></span><span className="bv-label-status">DEMO</span></div>
+          <div className="bv-preview-card"><ArchPreview /></div>
+          <div className="bv-floating-note bv-floating-note--top"><span className="bv-note-icon bv-note-icon--blue"><GitBranch size={15} /></span><span><strong>Dependencies mapped</strong><small>Every connection tells a story</small></span></div>
+          <div className="bv-floating-note bv-floating-note--bottom"><span className="bv-note-icon bv-note-icon--peach"><Zap size={15} /></span><span><strong>Ready to stress-test</strong><small>Try a failure scenario ↗</small></span></div>
+        </div>
+
+        <a className="bv-scroll-cue" href="#features"><span /> Scroll to explore</a>
       </section>
 
-      {/* ── Section 1: Build Together ───────────────────────────────────── */}
-      <LSection bg="var(--surface-1)">
-        <Eyebrow color="var(--accent-violet)">Build</Eyebrow>
-        <SectionHead>Build together, not in isolation</SectionHead>
-        <SectionBody>
-          A shared infinite canvas means your whole team sees the same architecture — live.
-          No more emailing diagrams or misaligned whiteboard photos.
-        </SectionBody>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginTop: 28 }}>
-          <FCard icon={<Users size={18} />} color="var(--accent-violet)" title="Live presence" body="See teammates' cursors and edits in real time as they happen." />
-          <FCard icon={<MessageCircle size={18} />} color="var(--accent-blue)" title="Component queries" body="Raise questions and track discussions directly on the nodes they relate to." />
-          <FCard icon={<TrendingUp size={18} />} color="var(--accent-green)" title="Shared history" body="Every change is captured in the architecture timeline so decisions can be traced." />
-        </div>
-      </LSection>
+      <div className="bv-spectrum-bridge" aria-hidden="true">
+        <svg viewBox="0 0 1600 120" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="bv-bridge-spectrum" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#ff5f8f" />
+              <stop offset="24%" stopColor="#ff8d55" />
+              <stop offset="44%" stopColor="#df4fc8" />
+              <stop offset="66%" stopColor="#8b62f5" />
+              <stop offset="84%" stopColor="#3a9bf3" />
+              <stop offset="100%" stopColor="#23c9d9" />
+            </linearGradient>
+          </defs>
+          <g fill="none" stroke="url(#bv-bridge-spectrum)" strokeLinecap="round">
+            {Array.from({ length: 13 }, (_, index) => (
+              <path
+                key={index}
+                d="M -40 48 C 145 118 255 110 405 62 S 655 -6 805 57 S 1065 132 1220 68 S 1450 2 1640 72"
+                transform={`translate(0 ${(index - 6) * 6})`}
+                strokeWidth="2.1"
+                opacity={0.9 - Math.abs(index - 6) * 0.045}
+              />
+            ))}
+            <path d="M -40 48 C 145 118 255 110 405 62 S 655 -6 805 57 S 1065 132 1220 68 S 1450 2 1640 72" strokeWidth="15" opacity=".12" />
+          </g>
+        </svg>
+      </div>
 
-      {/* ── Section 2: Every component ──────────────────────────────────── */}
-      <LSection>
-        <Eyebrow color="var(--accent-blue)">Discuss</Eyebrow>
-        <SectionHead>Every component has a story</SectionHead>
-        <SectionBody>
-          Services, databases, queues, and connections are editable objects — not static boxes.
-          Attach metadata, raise queries, assign decisions.
-        </SectionBody>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10, marginTop: 24 }}>
-          {[
-            { name: "API Gateway",   metric: "1.2k req/s", color: "var(--cat-application)" },
-            { name: "PostgreSQL",    metric: "68% capacity", color: "var(--cat-data)"       },
-            { name: "Redis Cache",   metric: "92% hit rate", color: "var(--cat-data)"       },
-            { name: "Message Queue", metric: "1.2k msgs/s",  color: "var(--cat-messaging)"  },
-          ].map((c) => (
-            <div
-              key={c.name}
-              style={{
-                display: "flex", alignItems: "center", gap: 10,
-                padding: "10px 14px",
-                background: "var(--surface-1)",
-                border: `1px solid color-mix(in srgb, ${c.color} 22%, transparent)`,
-                borderRadius: "var(--r-md)",
-              }}
-            >
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: c.color, flexShrink: 0 }} />
-              <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: "var(--text-primary)" }}>{c.name}</span>
-              <span style={{ fontSize: 10, color: c.color, fontFamily: "var(--font-mono)", fontWeight: 500 }}>{c.metric}</span>
-              <span style={{ fontSize: 9, color: "var(--accent-green)", fontFamily: "var(--font-mono)", fontWeight: 700 }}>HEALTHY</span>
+      <section className="bv-workflow-ribbon" aria-label="The BITverse workflow">
+        <div className="bv-ribbon-intro">ONE ARCHITECTURE.<br /><span>FOUR WAYS TO MAKE IT BETTER.</span></div>
+        {FEATURES.map((feature, index) => (
+          <a className={`bv-ribbon-step bv-ribbon-step--${feature.color}`} href={index === 2 ? "#failure-lab" : "#features"} key={feature.number}>
+            <span className="bv-ribbon-number">{feature.number}</span><span className="bv-ribbon-label">{feature.tag}</span><ArrowUpRight size={14} className="bv-ribbon-arrow" />
+          </a>
+        ))}
+      </section>
+
+      <section className="bv-section bv-section--features" id="features">
+        <div className="bv-section-head">
+          <div>
+            <span className="bv-section-kicker">A better way to think in systems</span>
+            <h2>From scattered ideas<br />to <em>systems that make sense.</em></h2>
+          </div>
+          <p>Architecture should be more than a diagram. It should be a place where your team can reason, challenge, and improve the design together.</p>
+        </div>
+
+        <div className="bv-feature-grid">
+          {FEATURES.map((feature) => (
+            <article className={`bv-feature-card bv-feature-card--${feature.color}`} key={feature.number}>
+              <div className="bv-feature-card-top"><span className="bv-feature-icon">{feature.icon}</span><span className="bv-feature-number">{feature.number}</span></div>
+              <span className="bv-feature-tag">{feature.tag}</span>
+              <h3>{feature.title}</h3>
+              <p>{feature.description}</p>
+              <span className="bv-feature-underline" />
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="bv-section bv-section--workflow" id="workflow">
+        <div className="bv-workflow-copy">
+          <span className="bv-section-kicker">Small steps. Better architecture.</span>
+          <h2>Think clearly.<br /><em>Build resiliently.</em></h2>
+          <p>Keep the design and the reasoning behind it in the same place. No bouncing between a diagram, a chat thread, and a separate incident doc.</p>
+          <button className="bv-button bv-button--primary" onClick={openWorkspace}>Explore the workspace <ArrowRight size={16} /></button>
+        </div>
+        <div className="bv-steps-list">
+          {STEPS.map((step) => (
+            <div className="bv-step" key={step.number}>
+              <span className="bv-step-number">{step.number}</span>
+              <div className="bv-step-body"><h3>{step.title}</h3><p>{step.body}</p></div>
+              <ArrowUpRight className="bv-step-arrow" size={16} />
             </div>
           ))}
         </div>
-      </LSection>
-
-      {/* ── Section 3: Break ────────────────────────────────────────────── */}
-      <LSection bg="var(--surface-1)">
-        <Eyebrow color="var(--accent-red)">Break</Eyebrow>
-        <SectionHead>What happens when things break?</SectionHead>
-        <SectionBody>
-          Introduce controlled failures and watch how they propagate through your architecture.
-          The Failure Lab runs deterministic simulations based on your actual graph.
-        </SectionBody>
-        <BreakDemo />
-      </LSection>
-
-      {/* ── Section 4: Queries ──────────────────────────────────────────── */}
-      <LSection>
-        <Eyebrow color="var(--accent-green)">Evolve</Eyebrow>
-        <SectionHead>From questions to better architecture</SectionHead>
-        <SectionBody>
-          A query attached to a component becomes a tracked discussion that drives an architecture
-          improvement — and stays in the timeline forever.
-        </SectionBody>
-        <QueryDemo />
-      </LSection>
-
-      {/* ── Final CTA ───────────────────────────────────────────────────── */}
-      <section style={{ padding: "96px 40px", textAlign: "center", maxWidth: 680, margin: "0 auto" }}>
-        <h2
-          style={{
-            fontFamily: "var(--font-head)",
-            fontSize: "clamp(26px, 4vw, 42px)",
-            fontWeight: 800,
-            letterSpacing: "-0.03em",
-            lineHeight: 1.15,
-            marginBottom: 16,
-          }}
-        >
-          Your next great system starts with a{" "}
-          <span
-            style={{
-              background: "linear-gradient(135deg, var(--accent-violet), var(--accent-cyan))",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            shared canvas.
-          </span>
-        </h2>
-        <p style={{ fontSize: 15, color: "var(--text-secondary)", marginBottom: 32, lineHeight: 1.6 }}>
-          No setup required. Start with a template or blank canvas.
-        </p>
-        <button
-          onClick={() => setView("workspace")}
-          style={{
-            padding: "13px 32px",
-            background: "var(--accent-violet)",
-            border: "none", borderRadius: "var(--r-md)",
-            color: "#fff", fontSize: 15, fontWeight: 800,
-            cursor: "pointer", fontFamily: "var(--font-head)",
-            boxShadow: "0 8px 28px rgba(108,92,231,.32)",
-          }}
-        >
-          Start Building Together
-        </button>
       </section>
 
-      {/* Footer */}
-      <footer
-        style={{
-          padding: "20px 40px",
-          borderTop: "1px solid var(--border)",
-          textAlign: "center",
-        }}
-      >
-        <p style={{ fontSize: 11, color: "var(--text-tertiary)" }}>
-          BITverse — Build It Together · Design systems. Challenge assumptions. Build better together.
-        </p>
-      </footer>
-    </div>
-  );
-}
-
-/* ─── sub-components ─────────────────────────────────────────────────────── */
-
-function NavLogo() {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 7, userSelect: "none" }}>
-      <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden>
-        <polygon points="11,2 20,7 20,15 11,20 2,15 2,7" stroke="var(--accent-violet)" strokeWidth="1.5" fill="none" />
-        <circle cx="11" cy="11" r="2" fill="var(--accent-violet)" />
-      </svg>
-      <span style={{ fontSize: 15, fontWeight: 800, fontFamily: "var(--font-head)", letterSpacing: "-0.02em" }}>
-        <span style={{ color: "var(--accent-violet)" }}>BIT</span>verse
-      </span>
-    </div>
-  );
-}
-
-function NavLinks() {
-  return (
-    <div style={{ display: "flex", gap: 26 }}>
-      {["Product", "How it works", "Challenges"].map((l) => (
-        <a
-          key={l}
-          href={`#${l.toLowerCase().replace(/\s+/g, "-")}`}
-          style={{ fontSize: 13, color: "var(--text-secondary)", textDecoration: "none" }}
-        >
-          {l}
-        </a>
-      ))}
-    </div>
-  );
-}
-
-function LSection({ bg, children }: { bg?: string; children: React.ReactNode }) {
-  return (
-    <section
-      style={{
-        background: bg ?? "var(--surface-0)",
-        padding: "72px 80px",
-      }}
-    >
-      <div style={{ maxWidth: 1140, margin: "0 auto" }}>{children}</div>
-    </section>
-  );
-}
-
-function Eyebrow({ children, color }: { children: React.ReactNode; color: string }) {
-  return (
-    <div style={{ fontSize: 10, fontWeight: 700, color, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>
-      {children}
-    </div>
-  );
-}
-
-function SectionHead({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 style={{ fontFamily: "var(--font-head)", fontSize: "clamp(22px, 3vw, 36px)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.15, marginBottom: 12 }}>
-      {children}
-    </h2>
-  );
-}
-
-function SectionBody({ children }: { children: React.ReactNode }) {
-  return (
-    <p style={{ fontSize: 15, color: "var(--text-secondary)", lineHeight: 1.7, maxWidth: 540 }}>{children}</p>
-  );
-}
-
-function FCard({ icon, color, title, body }: { icon: React.ReactNode; color: string; title: string; body: string }) {
-  return (
-    <div style={{ background: "var(--surface-0)", border: "1px solid var(--border)", borderRadius: "var(--r-lg)", padding: "18px 16px" }}>
-      <div style={{ width: 34, height: 34, borderRadius: "var(--r-sm)", background: `color-mix(in srgb, ${color} 12%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 25%, transparent)`, display: "flex", alignItems: "center", justifyContent: "center", color, marginBottom: 10 }}>
-        {icon}
-      </div>
-      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", marginBottom: 5 }}>{title}</div>
-      <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.6 }}>{body}</div>
-    </div>
-  );
-}
-
-function BreakDemo() {
-  const [state, setState] = useState<"healthy" | "failing" | "recovered">("healthy");
-  const nodes = [
-    { label: "Web Client",           failing: false },
-    { label: "API Gateway",          failing: state === "failing" },
-    { label: "Order Service",        failing: state === "failing" },
-    { label: "PostgreSQL Database",  failing: state !== "healthy" },
-    { label: "Redis Cache",          failing: false },
-  ];
-  return (
-    <div style={{ marginTop: 28, background: "var(--surface-0)", border: "1px solid var(--border)", borderRadius: "var(--r-lg)", padding: 20 }}>
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-        {(["healthy", "failing", "recovered"] as const).map((s) => (
-          <button
-            key={s}
-            onClick={() => setState(s)}
-            style={{
-              padding: "4px 12px", borderRadius: "var(--r-sm)", fontSize: 11,
-              cursor: "pointer", fontFamily: "var(--font-ui)", fontWeight: 600,
-              background: state === s
-                ? (s === "failing" ? "var(--accent-red)" : s === "healthy" ? "var(--accent-green)" : "var(--accent-violet)")
-                : "var(--surface-2)",
-              border: `1px solid ${state === s
-                ? (s === "failing" ? "var(--accent-red)" : s === "healthy" ? "var(--accent-green)" : "var(--accent-violet)")
-                : "var(--border)"}`,
-              color: state === s ? "#fff" : "var(--text-secondary)",
-            }}
-          >
-            {s.charAt(0).toUpperCase() + s.slice(1)}
-          </button>
-        ))}
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        {nodes.map(({ label, failing }) => {
-          const col = failing ? "var(--accent-red)" : "var(--accent-green)";
-          const status = failing ? "DOWN" : "HEALTHY";
-          return (
-            <div
-              key={label}
-              style={{
-                display: "flex", alignItems: "center", gap: 10,
-                padding: "8px 12px",
-                background: `color-mix(in srgb, ${col} 6%, transparent)`,
-                border: `1px solid color-mix(in srgb, ${col} 20%, transparent)`,
-                borderRadius: "var(--r-sm)",
-                transition: "all 0.2s",
-              }}
-            >
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: col, flexShrink: 0 }} />
-              <span style={{ fontSize: 12, color: "var(--text-primary)", flex: 1 }}>{label}</span>
-              <span style={{ fontSize: 9, color: col, fontFamily: "var(--font-mono)", fontWeight: 700 }}>{status}</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function QueryDemo() {
-  const msgs = [
-    { author: "Aanya", color: "var(--accent-violet)", text: "Is this database a single point of failure?" },
-    { author: "Aanya", color: "var(--accent-violet)", text: "If the primary becomes unavailable, the entire checkout flow may stop." },
-    { author: "Rohan", color: "var(--accent-green)",  text: "We could introduce a read replica and a failover strategy." },
-    { author: "You",   color: "var(--accent-blue)",   text: "Failover design added to the architecture. Closing this." },
-  ];
-  return (
-    <div style={{ marginTop: 28, background: "var(--surface-0)", border: "1px solid var(--border)", borderRadius: "var(--r-lg)", padding: "18px 20px", maxWidth: 560 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: "var(--accent-amber)", marginBottom: 12 }}>
-        ⚠ Open Query · PostgreSQL Database
-      </div>
-      {msgs.map((m, i) => (
-        <div key={i} style={{ display: "flex", gap: 9, marginBottom: 9 }}>
-          <div style={{ width: 22, height: 22, borderRadius: "50%", background: `color-mix(in srgb, ${m.color} 15%, transparent)`, border: `1.5px solid color-mix(in srgb, ${m.color} 45%, transparent)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 700, color: m.color, flexShrink: 0 }}>
-            {m.author.slice(0, 2).toUpperCase()}
-          </div>
-          <div style={{ flex: 1 }}>
-            <span style={{ fontSize: 10, fontWeight: 600, color: m.color, marginRight: 5 }}>{m.author}</span>
-            <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>{m.text}</span>
-          </div>
+      <section className="bv-failure-section" id="failure-lab">
+        <div className="bv-failure-copy">
+          <span className="bv-section-kicker bv-section-kicker--peach"><Zap size={13} /> THE FAILURE LAB</span>
+          <h2>What if your<br /><em>database disappeared?</em></h2>
+          <p>Don't wait for production to discover a single point of failure. Use controlled scenarios to explore blast radius, spot dependencies, and strengthen the design before it matters.</p>
+          <button className="bv-button bv-button--dark" onClick={openFailureLab}>Run a what-if scenario <ArrowRight size={16} /></button>
+          <span className="bv-failure-caption"><ShieldAlert size={14} /> Deterministic, graph-based demo simulations</span>
         </div>
-      ))}
-      <div style={{ marginTop: 8, padding: "5px 9px", background: "rgba(0,184,148,.07)", border: "1px solid rgba(0,184,148,.2)", borderRadius: "var(--r-sm)", fontSize: 10, color: "var(--accent-green)", fontWeight: 600 }}>
-        ✓ Resolved — Failover design added to the architecture
-      </div>
-    </div>
+        <div className="bv-failure-card" aria-label="Illustrative database outage simulation preview">
+          <div className="bv-failure-card-head"><span className="bv-failure-pulse" /> SIMULATION PREVIEW <span className="bv-failure-time">00:03.4</span></div>
+          <div className="bv-scenario-title"><span className="bv-scenario-icon"><ShieldAlert size={18} /></span><span><strong>Primary database outage</strong><small>What happens if PostgreSQL goes down?</small></span><span className="bv-scenario-badge">WHAT IF</span></div>
+          <div className="bv-scenario-nodes">
+            <div className="bv-scenario-node bv-scenario-node--healthy"><span className="bv-scenario-dot" /><span>Web client</span><small>Healthy</small></div>
+            <div className="bv-scenario-connector"><span /></div>
+            <div className="bv-scenario-node bv-scenario-node--warning"><span className="bv-scenario-dot" /><span>Order service</span><small>Degraded</small></div>
+            <div className="bv-scenario-connector bv-scenario-connector--broken"><span /></div>
+            <div className="bv-scenario-node bv-scenario-node--down"><span className="bv-scenario-dot" /><span>PostgreSQL</span><small>Down</small></div>
+          </div>
+          <div className="bv-scenario-summary"><span className="bv-summary-icon"><Activity size={14} /></span><span><strong>2 dependent components affected</strong><small>Blast radius identified in the graph</small></span><ArrowUpRight size={15} /></div>
+        </div>
+      </section>
+
+      <section className="bv-final-cta">
+        <div className="bv-cta-decoration bv-cta-decoration--one" aria-hidden="true" />
+        <div className="bv-cta-decoration bv-cta-decoration--two" aria-hidden="true" />
+        <span className="bv-section-kicker">YOUR NEXT SYSTEM STARTS HERE</span>
+        <h2>Make the invisible<br /><em>architecture visible.</em></h2>
+        <p>Open the canvas. Start with the idea. Leave with a stronger system.</p>
+        <button className="bv-button bv-button--primary bv-button--cta" onClick={openWorkspace}>Build it together <ArrowRight size={16} /></button>
+        <div className="bv-cta-annotation"><Sparkles size={13} /> A little clarity goes a long way.</div>
+      </section>
+
+      <footer className="bv-footer">
+        <a className="bv-brand bv-brand--footer" href="#top"><span className="bv-brand-mark"><Layers3 size={17} /></span><span className="bv-brand-word"><strong>BIT</strong>verse</span></a>
+        <span>Design systems. Challenge assumptions. Build better together.</span>
+        <a className="bv-footer-top" href="#top">Back to top ↑</a>
+      </footer>
+    </main>
   );
 }

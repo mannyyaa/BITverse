@@ -13,11 +13,17 @@ const TEMPLATES = [
 
 export function Dashboard() {
   const setView     = useUIStore((s) => s.setView);
+  const setFailureLabOpen = useUIStore((s) => s.setFailureLabOpen);
+  const openFailureLab = () => {
+    setFailureLabOpen(true);
+    setView("workspace");
+  };
   const workspace   = useWorkspaceStore((s) => s.workspace);
   const timeline    = workspace.timeline.slice(0, 5);
 
   return (
     <div
+      className="bv-dashboard"
       style={{
         minHeight: "100vh",
         background: "var(--surface-1)",
@@ -26,6 +32,7 @@ export function Dashboard() {
     >
       {/* Top bar */}
       <header
+        className="bv-dashboard-header"
         style={{
           height: 52,
           background: "var(--surface-0)",
@@ -48,6 +55,7 @@ export function Dashboard() {
       </header>
 
       <main
+        className="bv-dashboard-main"
         style={{
           maxWidth: 1080,
           margin: "0 auto",
@@ -76,16 +84,16 @@ export function Dashboard() {
         </div>
 
         {/* Quick actions */}
-        <div style={{ display: "flex", gap: 8 }}>
+        <div className="bv-dashboard-quick-actions" style={{ display: "flex", gap: 8 }}>
           <QuickAction icon={<Plus size={14} />}   label="New Workspace"    color="var(--accent-violet)" onClick={() => setView("workspace")} />
-          <QuickAction icon={<Users size={14} />}   label="Join Workspace"   color="var(--accent-blue)"   onClick={() => {}} />
-          <QuickAction icon={<Zap size={14} />}     label="Open Failure Lab" color="var(--accent-red)"    onClick={() => setView("workspace")} />
+          <QuickAction icon={<Users size={14} />}   label="Open Workspace"   color="var(--accent-blue)"   onClick={() => setView("workspace")} />
+          <QuickAction icon={<Zap size={14} />}     label="Open Failure Lab" color="var(--accent-red)"    onClick={openFailureLab} />
         </div>
 
         {/* Two columns */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 24, alignItems: "start" }}>
+        <div className="bv-dashboard-grid" style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 24, alignItems: "start" }}>
           {/* Left: recent + templates */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <div className="bv-dashboard-primary-column" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             {/* Recent workspaces */}
             <div>
               <SectionTitle>Recent Workspaces</SectionTitle>
@@ -102,7 +110,7 @@ export function Dashboard() {
             {/* Templates */}
             <div>
               <SectionTitle>Start from a Template</SectionTitle>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+              <div className="bv-template-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
                 {TEMPLATES.map((t) => (
                   <TemplateCard key={t.id} {...t} onClick={() => setView("workspace")} />
                 ))}
@@ -111,7 +119,7 @@ export function Dashboard() {
           </div>
 
           {/* Right: activity + challenges */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <div className="bv-dashboard-side-column" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             {/* Activity */}
             <div>
               <SectionTitle>Recent Activity</SectionTitle>

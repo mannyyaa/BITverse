@@ -3,60 +3,58 @@
    Soft, sophisticated, multicolour. Precise. Professional.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
-
 :root {
   color-scheme: light;
 
   /* ── Canvas / Page ─────────────────────────────────────────────────────── */
-  --canvas-bg:      #f7f8fa;       /* very light cool grey — canvas surface  */
-  --canvas-dot:     #dde1e9;       /* dot-grid colour                         */
+  --canvas-bg:      #f8f7f3;       /* warm paper canvas surface                */
+  --canvas-dot:     #e0ddd4;       /* dot-grid colour                         */
 
   /* ── Surfaces ──────────────────────────────────────────────────────────── */
-  --surface-0:      #ffffff;       /* top-level panels, dialogs               */
-  --surface-1:      #f7f8fa;       /* secondary surfaces                      */
-  --surface-2:      #eef0f5;       /* hover states, inset areas               */
-  --surface-3:      #e4e7ef;       /* deeper inset, selected row bg           */
+  --surface-0:      #fffefa;       /* top-level panels, dialogs               */
+  --surface-1:      #f7f6f2;       /* secondary surfaces                      */
+  --surface-2:      #f0eee8;       /* hover states, inset areas               */
+  --surface-3:      #e7e4dc;       /* deeper inset, selected row bg           */
 
   /* ── Borders ───────────────────────────────────────────────────────────── */
-  --border:         #e2e5ee;       /* default border                          */
-  --border-strong:  #c8cdd9;       /* stronger separator                      */
-  --border-focus:   #6c5ce7;       /* focus ring                              */
+  --border:         #e6e3db;       /* default border                          */
+  --border-strong:  #c8c5bc;       /* stronger separator                      */
+  --border-focus:   #8270cf;       /* focus ring                              */
 
   /* ── Typography ────────────────────────────────────────────────────────── */
-  --text-primary:   #0f1117;       /* headings, primary labels                */
-  --text-secondary: #4a5168;       /* body copy, descriptions                 */
-  --text-tertiary:  #7c849a;       /* captions, placeholders                  */
-  --text-disabled:  #b0b7c9;       /* disabled states                         */
+  --text-primary:   #292c35;       /* headings, primary labels                */
+  --text-secondary: #666c78;       /* body copy, descriptions                 */
+  --text-tertiary:  #898d97;       /* captions, placeholders                  */
+  --text-disabled:  #b9b8bb;       /* disabled states                         */
   --text-inverse:   #ffffff;       /* text on coloured backgrounds            */
 
   /* ── Brand Accents ─────────────────────────────────────────────────────── */
-  --accent-violet:  #6c5ce7;       /* primary brand — violet (Figma-like)     */
-  --accent-blue:    #0984e3;       /* links, info states                      */
-  --accent-cyan:    #00b4d8;       /* data flow, connections                  */
-  --accent-green:   #00b894;       /* success, healthy status                 */
-  --accent-amber:   #e17055;       /* warning, degraded status                */
-  --accent-red:     #d63031;       /* danger, down status, failure            */
-  --accent-pink:    #e84393;       /* queries, annotations                    */
-  --accent-teal:    #00cec9;       /* secondary connections                   */
+  --accent-violet:  #8270cf;       /* primary brand — violet (Figma-like)     */
+  --accent-blue:    #6099bb;       /* links, info states                      */
+  --accent-cyan:    #79b4c7;       /* data flow, connections                  */
+  --accent-green:   #66977b;       /* success, healthy status                 */
+  --accent-amber:   #d69a6f;       /* warning, degraded status                */
+  --accent-red:     #cf737a;       /* danger, down status, failure            */
+  --accent-pink:    #c77fa4;       /* queries, annotations                    */
+  --accent-teal:    #7bb8b0;       /* secondary connections                   */
 
   /* ── Semantic colours ──────────────────────────────────────────────────── */
-  --status-healthy:    #00b894;
-  --status-degraded:   #e17055;
-  --status-overloaded: #d63031;
-  --status-down:       #d63031;
+  --status-healthy:    #66977b;
+  --status-degraded:   #d69a6f;
+  --status-overloaded: #cf737a;
+  --status-down:       #cf737a;
 
-  --priority-low:      #00b894;
-  --priority-medium:   #0984e3;
-  --priority-high:     #e17055;
-  --priority-critical: #d63031;
+  --priority-low:      #66977b;
+  --priority-medium:   #6099bb;
+  --priority-high:     #d69a6f;
+  --priority-critical: #cf737a;
 
   /* ── Node category colours ─────────────────────────────────────────────── */
-  --cat-application:    #6c5ce7;   /* violet */
-  --cat-compute:        #0984e3;   /* blue   */
-  --cat-data:           #00b894;   /* green  */
-  --cat-messaging:      #e17055;   /* amber  */
-  --cat-infrastructure: #7c849a;   /* slate  */
+  --cat-application:    #8270cf;   /* violet */
+  --cat-compute:        #6099bb;   /* blue   */
+  --cat-data:           #66977b;   /* green  */
+  --cat-messaging:      #d69a6f;   /* amber  */
+  --cat-infrastructure: #87909d;   /* slate  */
 
   /* ── Typography ────────────────────────────────────────────────────────── */
   --font-ui:    'Inter', ui-sans-serif, system-ui, sans-serif;
@@ -82,16 +80,16 @@
   --r-full: 9999px;
 
   /* ── Elevation / Shadow ────────────────────────────────────────────────── */
-  --shadow-xs:  0 1px 2px rgba(15,17,23,.06);
-  --shadow-sm:  0 1px 3px rgba(15,17,23,.08), 0 1px 2px rgba(15,17,23,.06);
-  --shadow-md:  0 4px 6px rgba(15,17,23,.06), 0 2px 4px rgba(15,17,23,.05);
-  --shadow-lg:  0 10px 24px rgba(15,17,23,.08), 0 4px 8px rgba(15,17,23,.05);
-  --shadow-xl:  0 20px 40px rgba(15,17,23,.10), 0 8px 16px rgba(15,17,23,.06);
+  --shadow-xs:  0 1px 2px rgba(47,43,37,.045);
+  --shadow-sm:  0 1px 3px rgba(47,43,37,.055), 0 1px 2px rgba(47,43,37,.035);
+  --shadow-md:  0 4px 6px rgba(47,43,37,.055), 0 2px 4px rgba(47,43,37,.035);
+  --shadow-lg:  0 10px 24px rgba(47,43,37,.065), 0 4px 8px rgba(47,43,37,.035);
+  --shadow-xl:  0 20px 40px rgba(47,43,37,.08), 0 8px 16px rgba(47,43,37,.04);
 
   /* ── Glow (for selected / active states) ──────────────────────────────── */
-  --glow-violet: 0 0 0 3px rgba(108,92,231,.18);
-  --glow-blue:   0 0 0 3px rgba(9,132,227,.18);
-  --glow-green:  0 0 0 3px rgba(0,184,148,.18);
+  --glow-violet: 0 0 0 3px rgba(130,112,207,.18);
+  --glow-blue:   0 0 0 3px rgba(96,153,187,.18);
+  --glow-green:  0 0 0 3px rgba(102,151,123,.18);
 
   /* ── Transitions ───────────────────────────────────────────────────────── */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -107,7 +105,10 @@
   padding: 0;
 }
 
+html { scroll-behavior: smooth; }
+
 html, body, #root {
+  min-height: 100%;
   height: 100%;
 }
 
@@ -247,5 +248,155 @@ a {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Application shell polish + responsive behaviour ───────────────────── */
+.bv-dashboard {
+  background: linear-gradient(180deg, #fbfaf7 0%, #f6f5f1 100%) !important;
+}
+.bv-dashboard-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  box-shadow: 0 4px 22px rgba(49, 45, 37, .035);
+}
+.bv-dashboard-main {
+  width: 100%;
+}
+.bv-dashboard-grid {
+  min-width: 0;
+}
+.bv-dashboard-quick-actions {
+  flex-wrap: wrap;
+}
+.bv-dashboard-primary-column,
+.bv-dashboard-side-column,
+.bv-template-grid {
+  min-width: 0;
+}
+.bv-workspace-header {
+  box-shadow: 0 3px 12px rgba(49, 45, 37, .025);
+}
+.bv-workspace-breadcrumb {
+  overflow: hidden;
+  white-space: nowrap;
+}
+.bv-workspace-description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 900px) {
+  .bv-dashboard-main {
+    padding: 28px 20px !important;
+  }
+  .bv-dashboard-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .bv-dashboard-side-column {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 18px !important;
+  }
+  .bv-workspace-description,
+  .bv-workspace-breadcrumb > span:nth-child(2) {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .bv-dashboard-header {
+    padding: 0 14px !important;
+  }
+  .bv-dashboard-main {
+    padding: 23px 14px !important;
+    gap: 24px !important;
+  }
+  .bv-dashboard-main h1 {
+    font-size: 23px !important;
+  }
+  .bv-template-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  .bv-dashboard-side-column {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .bv-workspace-header {
+    gap: 4px !important;
+    padding: 0 6px !important;
+  }
+  .bv-workspace-breadcrumb {
+    font-size: 10px !important;
+    max-width: 28vw;
+  }
+  .bv-workspace-header button {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 760px) {
+  .bv-workspace {
+    position: relative;
+  }
+  .bv-workspace-header {
+    gap: 5px !important;
+  }
+  .bv-workspace-description,
+  .bv-saved-badge,
+  .bv-top-btn,
+  .bv-collaborator-list,
+  .bv-workspace-header .bv-workspace-divider {
+    display: none !important;
+  }
+  .bv-workspace-breadcrumb {
+    max-width: 32vw;
+    flex-shrink: 1;
+  }
+  .bv-invite-btn {
+    padding: 4px 7px !important;
+    font-size: 10px !important;
+  }
+  .bv-failure-lab-btn {
+    padding: 5px 7px !important;
+    font-size: 0 !important;
+  }
+  .bv-failure-lab-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+  .bv-component-library {
+    position: absolute;
+    z-index: 40;
+    top: 46px;
+    bottom: 0;
+    left: 42px;
+    width: min(216px, calc(100vw - 54px)) !important;
+    height: auto !important;
+    box-shadow: 12px 0 28px rgba(40, 39, 49, .09);
+  }
+  .bv-workspace-right-area {
+    position: absolute;
+    z-index: 35;
+    top: 46px;
+    right: 0;
+    bottom: 0;
+    max-width: calc(100vw - 46px);
+    background: var(--surface-0);
+    box-shadow: -12px 0 28px rgba(40, 39, 49, .08);
+  }
+  .bv-inspector {
+    width: min(220px, calc(100vw - 48px)) !important;
+  }
+  .bv-workspace-side-panel {
+    width: min(248px, calc(100vw - 48px)) !important;
+  }
+}
+@media (max-width: 420px) {
+  .bv-workspace-header > button.bv-failure-lab-btn {
+    margin-left: auto;
+  }
+  .bv-workspace-header .bv-invite-btn {
+    display: none !important;
   }
 }
