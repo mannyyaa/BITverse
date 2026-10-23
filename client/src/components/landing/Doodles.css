@@ -1,0 +1,103 @@
+/* ── Doodle base ─────────────────────────────────────────────────────────── */
+.bv-doodle {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Floating sticky notes ───────────────────────────────────────────────── */
+.bv-floaty-sticky {
+  position: absolute;
+  z-index: 0; /* behind hero copy (z-index 2) and hero visual (z-index 1) */
+}
+
+/* Gentle floating animation shared by hero stickies */
+.bv-floaty-sticky--float {
+  animation: bv-doodle-float 6s ease-in-out infinite;
+}
+.bv-floaty-sticky--float-alt {
+  animation: bv-doodle-float 7s 1.4s ease-in-out infinite;
+}
+.bv-floaty-sticky--float-slow {
+  animation: bv-doodle-float 9s 0.7s ease-in-out infinite;
+}
+
+/* ── Scroll-reveal ───────────────────────────────────────────────────────── */
+/*
+ * IMPORTANT: content is ALWAYS visible by default.
+ * The animation is a progressive enhancement: the .bv-anim-ready class
+ * (added to <main> by JS after first paint) opts the page into the
+ * hide-on-load behaviour. If JS fails or the IntersectionObserver never
+ * fires, content remains fully visible at all times.
+ */
+.bv-anim-ready .bv-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+              transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.bv-reveal--visible {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  transition: opacity 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+              transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Stagger helpers — only affect the transition timing, not visibility */
+.bv-anim-ready .bv-reveal--d1 { transition-delay: 0.07s; }
+.bv-anim-ready .bv-reveal--d2 { transition-delay: 0.14s; }
+.bv-anim-ready .bv-reveal--d3 { transition-delay: 0.21s; }
+.bv-anim-ready .bv-reveal--d4 { transition-delay: 0.28s; }
+
+/* ── Doodle draw-on animation (SVG path) ─────────────────────────────────── */
+.bv-doodle-draw path,
+.bv-doodle-draw circle {
+  stroke-dasharray: 300;
+  stroke-dashoffset: 300;
+  transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1) 0.2s;
+}
+.bv-doodle-draw--visible path,
+.bv-doodle-draw--visible circle {
+  stroke-dashoffset: 0;
+}
+
+/* ── Gentle parallax float ───────────────────────────────────────────────── */
+.bv-parallax-slow {
+  will-change: transform;
+}
+
+/* ── Keyframes ───────────────────────────────────────────────────────────── */
+@keyframes bv-doodle-float {
+  0%, 100% { transform: translateY(0) rotate(var(--rot, -2.5deg)); }
+  50%       { transform: translateY(-6px) rotate(var(--rot, -2.5deg)); }
+}
+
+@keyframes bv-spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .bv-floaty-sticky,
+  .bv-floaty-sticky--float,
+  .bv-floaty-sticky--float-alt,
+  .bv-floaty-sticky--float-slow {
+    animation: none !important;
+  }
+  .bv-anim-ready .bv-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .bv-reveal--visible {
+    transition: none !important;
+  }
+  .bv-doodle-draw path,
+  .bv-doodle-draw circle {
+    stroke-dashoffset: 0 !important;
+    transition: none !important;
+  }
+  .bv-parallax-slow {
+    transform: none !important;
+  }
+}

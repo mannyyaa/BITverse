@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Activity,
   ArrowDownRight,
@@ -16,7 +16,22 @@ import {
 } from "lucide-react";
 import { useUIStore } from "@/store/uiStore";
 import { ArchPreview } from "./ArchPreview";
+import {
+  SquiggleArrow,
+  StarDoodle,
+  CircleDoodle,
+  WobblyUnderline,
+  SparkDoodle,
+  CurvedConnector,
+  MarkerUnderline,
+  ArrowDiagonal,
+  DotCluster,
+  FloatySticky,
+  AnnotationLabel,
+} from "./Doodles";
+import { useScrollReveal } from "@/lib/useScrollReveal";
 import "./LandingPage.css";
+import "./Doodles.css";
 
 type Feature = {
   number: string;
@@ -73,14 +88,27 @@ export function LandingPage() {
   const setView = useUIStore((s) => s.setView);
   const setFailureLabOpen = useUIStore((s) => s.setFailureLabOpen);
   const [scrolled, setScrolled] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
   const openWorkspace = () => setView("workspace");
   const openFailureLab = () => {
     setFailureLabOpen(true);
     setView("workspace");
   };
 
+  // Scroll reveal refs for each section
+  const revealFeatures = useScrollReveal<HTMLDivElement>(0.08);
+  const revealWorkflow = useScrollReveal<HTMLDivElement>(0.08);
+  const revealFailure  = useScrollReveal<HTMLDivElement>(0.08);
+  const revealCta      = useScrollReveal<HTMLDivElement>(0.1);
+
+  // Parallax float delta for a few hero doodles
+  const heroRef = useRef<HTMLElement>(null);
+
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 12);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 12);
+      setScrollY(window.scrollY);
+    };
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -110,7 +138,7 @@ export function LandingPage() {
         </div>
       </nav>
 
-      <section className="bv-hero" id="top">
+      <section className="bv-hero" id="top" ref={heroRef}>
         <div className="bv-hero-orb bv-hero-orb--one" aria-hidden="true" />
         <div className="bv-hero-orb bv-hero-orb--two" aria-hidden="true" />
         <svg className="bv-spectrum-flow bv-spectrum-flow--hero" viewBox="0 0 1510 470" preserveAspectRatio="none" aria-hidden="true">
@@ -137,6 +165,76 @@ export function LandingPage() {
             <path d="M -80 90 C 110 250 205 280 370 175 S 610 5 755 155 S 1010 340 1170 170 S 1350 30 1510 108" transform="translate(0 78)" strokeWidth="22" opacity=".14" />
           </g>
         </svg>
+
+        {/* ── Hero doodles (purely decorative) ── */}
+        <FloatySticky
+          text="What if we tried this?"
+          color="yellow"
+          emoji="💡"
+          className="bv-floaty-sticky--float"
+          style={{
+            top: "18%", left: "3%",
+            transform: `rotate(-2.5deg) translateY(${scrollY * 0.06}px)`,
+            "--rot": "-2.5deg",
+          } as React.CSSProperties}
+        />
+        <FloatySticky
+          text="SPOF?"
+          color="coral"
+          emoji="⚠️"
+          className="bv-floaty-sticky--float-alt"
+          style={{
+            bottom: "22%", left: "1.5%",
+            transform: `rotate(2deg) translateY(${-scrollY * 0.04}px)`,
+            "--rot": "2deg",
+          } as React.CSSProperties}
+        />
+        <FloatySticky
+          text="Let's test it!"
+          color="mint"
+          emoji="🧪"
+          className="bv-floaty-sticky--float-slow"
+          style={{
+            top: "12%", right: "2%",
+            transform: `rotate(1.5deg) translateY(${scrollY * 0.05}px)`,
+            "--rot": "1.5deg",
+          } as React.CSSProperties}
+        />
+
+        <AnnotationLabel
+          text="aha moment"
+          style={{ position: "absolute", top: "33%", left: "6%", transform: "rotate(-3deg)" }}
+        />
+        <AnnotationLabel
+          text="IDEA!"
+          style={{ position: "absolute", bottom: "30%", right: "4%", transform: "rotate(2deg)", color: "#dd9a6f", background: "rgba(221,154,111,.1)", borderColor: "rgba(221,154,111,.35)" }}
+        />
+        <AnnotationLabel
+          text="let's connect these"
+          style={{ position: "absolute", top: "58%", left: "3.5%", transform: "rotate(1deg)" }}
+        />
+
+        <SquiggleArrow
+          style={{ position: "absolute", top: "28%", left: "43%", color: "#8975d8", opacity: 0.45, transform: "rotate(20deg)" }}
+        />
+        <SquiggleArrow
+          style={{ position: "absolute", bottom: "26%", right: "6%", color: "#78a08a", opacity: 0.4, transform: "rotate(-30deg) scaleX(-1)" }}
+        />
+        <StarDoodle
+          style={{ position: "absolute", top: "16%", left: "38%", color: "#dd9a6f", opacity: 0.6, transform: `translateY(${scrollY * -0.03}px)` }}
+        />
+        <StarDoodle
+          style={{ position: "absolute", bottom: "34%", left: "28%", color: "#8975d8", opacity: 0.5 }}
+        />
+        <SparkDoodle
+          style={{ position: "absolute", top: "42%", left: "48%", color: "#6ba4c5", opacity: 0.55 }}
+        />
+        <SparkDoodle
+          style={{ position: "absolute", top: "22%", right: "9%", color: "#dd9a6f", opacity: 0.6 }}
+        />
+        <DotCluster
+          style={{ position: "absolute", top: "66%", left: "46%", color: "#8975d8", opacity: 0.4 }}
+        />
         <div className="bv-hero-copy">
           <div className="bv-eyebrow bv-eyebrow--hero"><span className="bv-eyebrow-spark"><Sparkles size={13} /></span> THE SYSTEM DESIGN WORKSPACE</div>
           <h1>Architecture is a team <span>sport.</span></h1>
@@ -168,6 +266,15 @@ export function LandingPage() {
           <div className="bv-visual-glow" aria-hidden="true" />
           <div className="bv-visual-label bv-visual-label--top"><span className="bv-label-icon"><Activity size={14} /></span><span><strong>Pulse Commerce</strong><small>Architecture map</small></span><span className="bv-label-status">DEMO</span></div>
           <div className="bv-preview-card"><ArchPreview /></div>
+          {/* Decorative arrow pointing at the preview */}
+          <SquiggleArrow
+            style={{ position: "absolute", top: "-18px", left: "18%", color: "#8975d8", opacity: 0.5, transform: "rotate(45deg)" }}
+          />
+          <FloatySticky
+            text="dependencies mapped!"
+            color="lavender"
+            style={{ position: "absolute", top: "8%", right: "-14px", zIndex: 6, transform: "rotate(2.5deg)" }}
+          />
           <div className="bv-floating-note bv-floating-note--top"><span className="bv-note-icon bv-note-icon--blue"><GitBranch size={15} /></span><span><strong>Dependencies mapped</strong><small>Every connection tells a story</small></span></div>
           <div className="bv-floating-note bv-floating-note--bottom"><span className="bv-note-icon bv-note-icon--peach"><Zap size={15} /></span><span><strong>Ready to stress-test</strong><small>Try a failure scenario ↗</small></span></div>
         </div>
@@ -212,17 +319,21 @@ export function LandingPage() {
       </section>
 
       <section className="bv-section bv-section--features" id="features">
-        <div className="bv-section-head">
-          <div>
+        <div className="bv-section-head bv-reveal" ref={revealFeatures}>
+          <div style={{ position: "relative" }}>
             <span className="bv-section-kicker">A better way to think in systems</span>
             <h2>From scattered ideas<br />to <em>systems that make sense.</em></h2>
+            {/* Marker underline under the heading */}
+            <MarkerUnderline style={{ position: "absolute", bottom: -6, left: 0, color: "#8975d8", width: 120 }} />
+            {/* Small star accent */}
+            <StarDoodle style={{ position: "absolute", top: -10, right: "22%", color: "#dd9a6f", opacity: 0.6 }} />
           </div>
           <p>Architecture should be more than a diagram. It should be a place where your team can reason, challenge, and improve the design together.</p>
         </div>
 
         <div className="bv-feature-grid">
-          {FEATURES.map((feature) => (
-            <article className={`bv-feature-card bv-feature-card--${feature.color}`} key={feature.number}>
+          {FEATURES.map((feature, i) => (
+            <article className={`bv-feature-card bv-feature-card--${feature.color} bv-reveal bv-reveal--d${(i + 1) as 1 | 2 | 3 | 4}`} key={feature.number}>
               <div className="bv-feature-card-top"><span className="bv-feature-icon">{feature.icon}</span><span className="bv-feature-number">{feature.number}</span></div>
               <span className="bv-feature-tag">{feature.tag}</span>
               <h3>{feature.title}</h3>
@@ -234,15 +345,19 @@ export function LandingPage() {
       </section>
 
       <section className="bv-section bv-section--workflow" id="workflow">
-        <div className="bv-workflow-copy">
+        <div className="bv-workflow-copy bv-reveal" ref={revealWorkflow}>
           <span className="bv-section-kicker">Small steps. Better architecture.</span>
           <h2>Think clearly.<br /><em>Build resiliently.</em></h2>
+          {/* Wobbly underline under "Build resiliently" */}
+          <WobblyUnderline style={{ display: "block", color: "#78a08a", opacity: 0.7, marginTop: 2, width: 160 }} />
           <p>Keep the design and the reasoning behind it in the same place. No bouncing between a diagram, a chat thread, and a separate incident doc.</p>
           <button className="bv-button bv-button--primary" onClick={openWorkspace}>Explore the workspace <ArrowRight size={16} /></button>
         </div>
-        <div className="bv-steps-list">
-          {STEPS.map((step) => (
-            <div className="bv-step" key={step.number}>
+        <div className="bv-steps-list" style={{ position: "relative" }}>
+          {/* Curved connector decoration between steps */}
+          <CurvedConnector style={{ position: "absolute", left: -32, top: "28%", color: "#8975d8", opacity: 0.28, transform: "rotate(90deg)" }} />
+          {STEPS.map((step, i) => (
+            <div className={`bv-step bv-reveal bv-reveal--d${Math.min(i + 1, 4) as 1|2|3|4}`} key={step.number}>
               <span className="bv-step-number">{step.number}</span>
               <div className="bv-step-body"><h3>{step.title}</h3><p>{step.body}</p></div>
               <ArrowUpRight className="bv-step-arrow" size={16} />
@@ -252,14 +367,22 @@ export function LandingPage() {
       </section>
 
       <section className="bv-failure-section" id="failure-lab">
-        <div className="bv-failure-copy">
+        <div className="bv-failure-copy bv-reveal" ref={revealFailure}>
           <span className="bv-section-kicker bv-section-kicker--peach"><Zap size={13} /> THE FAILURE LAB</span>
           <h2>What if your<br /><em>database disappeared?</em></h2>
           <p>Don't wait for production to discover a single point of failure. Use controlled scenarios to explore blast radius, spot dependencies, and strengthen the design before it matters.</p>
           <button className="bv-button bv-button--dark" onClick={openFailureLab}>Run a what-if scenario <ArrowRight size={16} /></button>
           <span className="bv-failure-caption"><ShieldAlert size={14} /> Deterministic, graph-based demo simulations</span>
         </div>
-        <div className="bv-failure-card" aria-label="Illustrative database outage simulation preview">
+        <div className="bv-failure-card bv-reveal bv-reveal--d2" aria-label="Illustrative database outage simulation preview" style={{ position: "relative" }}>
+          {/* Sticky note peeking above the failure card */}
+          <FloatySticky
+            text="What's the blast radius?"
+            color="coral"
+            emoji="💥"
+            style={{ position: "absolute", top: -48, right: 16, zIndex: 2 }}
+          />
+          <ArrowDiagonal style={{ position: "absolute", top: -30, right: 148, color: "#dd9a6f", opacity: 0.5 }} />
           <div className="bv-failure-card-head"><span className="bv-failure-pulse" /> SIMULATION PREVIEW <span className="bv-failure-time">00:03.4</span></div>
           <div className="bv-scenario-title"><span className="bv-scenario-icon"><ShieldAlert size={18} /></span><span><strong>Primary database outage</strong><small>What happens if PostgreSQL goes down?</small></span><span className="bv-scenario-badge">WHAT IF</span></div>
           <div className="bv-scenario-nodes">
@@ -273,9 +396,14 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="bv-final-cta">
+      <section className="bv-final-cta bv-reveal" ref={revealCta}>
         <div className="bv-cta-decoration bv-cta-decoration--one" aria-hidden="true" />
         <div className="bv-cta-decoration bv-cta-decoration--two" aria-hidden="true" />
+        {/* Small doodle cluster in the CTA */}
+        <SparkDoodle style={{ position: "absolute", top: "18%", left: "8%", color: "#8975d8", opacity: 0.5 }} />
+        <StarDoodle  style={{ position: "absolute", bottom: "22%", right: "7%", color: "#dd9a6f", opacity: 0.55 }} />
+        <CircleDoodle style={{ position: "absolute", top: "12%", right: "18%", color: "#6ba4c5", opacity: 0.3 }} />
+        <DotCluster  style={{ position: "absolute", bottom: "18%", left: "12%", color: "#78a08a", opacity: 0.45 }} />
         <span className="bv-section-kicker">YOUR NEXT SYSTEM STARTS HERE</span>
         <h2>Make the invisible<br /><em>architecture visible.</em></h2>
         <p>Open the canvas. Start with the idea. Leave with a stronger system.</p>

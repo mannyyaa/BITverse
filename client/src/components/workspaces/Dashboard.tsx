@@ -14,6 +14,9 @@ const TEMPLATES = [
 export function Dashboard() {
   const setView     = useUIStore((s) => s.setView);
   const setFailureLabOpen = useUIStore((s) => s.setFailureLabOpen);
+  const createNewWorkspace = useWorkspaceStore((s) => s.createNewWorkspace);
+
+  const openNewWorkspace = () => { createNewWorkspace(); setView("workspace"); };
   const openFailureLab = () => {
     setFailureLabOpen(true);
     setView("workspace");
@@ -46,7 +49,7 @@ export function Dashboard() {
         <Logo />
         <div style={{ flex: 1 }} />
         <button
-          onClick={() => setView("workspace")}
+          onClick={openNewWorkspace}
           style={primaryBtnSt}
         >
           <Plus size={13} /> New Workspace
@@ -85,7 +88,7 @@ export function Dashboard() {
 
         {/* Quick actions */}
         <div className="bv-dashboard-quick-actions" style={{ display: "flex", gap: 8 }}>
-          <QuickAction icon={<Plus size={14} />}   label="New Workspace"    color="var(--accent-violet)" onClick={() => setView("workspace")} />
+          <QuickAction icon={<Plus size={14} />}   label="New Workspace"    color="var(--accent-violet)" onClick={openNewWorkspace} />
           <QuickAction icon={<Users size={14} />}   label="Open Workspace"   color="var(--accent-blue)"   onClick={() => setView("workspace")} />
           <QuickAction icon={<Zap size={14} />}     label="Open Failure Lab" color="var(--accent-red)"    onClick={openFailureLab} />
         </div>

@@ -201,6 +201,13 @@ interface WorkspaceState {
   convertNode: (id: NodeId, kind: ComponentKind) => void;
   /** Replace the whole canvas graph in a single undoable step (for templates). */
   replaceGraph: (graph: CanvasGraph) => void;
+  /**
+   * Create a brand-new blank workspace and switch to it.
+   * The old workspace is written to localStorage under its own key first so
+   * existing work is never lost. The new workspace gets a unique ID so it
+   * is a genuinely independent canvas — not a view of the old one.
+   */
+  createNewWorkspace: () => void;
 
   // Query mutations
   addQuery: (query: Omit<Query, "id" | "createdAt" | "thread" | "status">) => void;
@@ -383,6 +390,31 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
     }),
 
   replaceGraph: (graph) => set((s) => recordGraphMutation(s, graph)),
+
+  createNewWorkspace: () =>
+    set((s) => {
+      // Persist the current workspace before abandoning it.
+      persistWorkspace(s.workspace);
+      const now = Date.now();
+      const fresh: Workspace = {
+        id: generateId("ws"),
+        name: "New Workspace",
+        description: "Blank canvas",
+        createdAt: now,
+        updatedAt: now,
+        mode: "brainstorm",
+        graph: { nodes: [], edges: [], strokes: [] },
+        queries: [],
+        timeline: [{ id: generateId("t"), kind: "workspace-created", description: "Workspace created", author: "You", timestamp: now }],
+        collaborators: [],
+        scenarios: [],
+      };
+      return {
+        workspace: fresh,
+        pastGraphStates: [],
+        futureGraphStates: [],
+      };
+    }),
 
   // ── Queries ────────────────────────────────────────────────────────────
   addQuery: (partial) =>
