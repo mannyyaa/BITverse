@@ -96,6 +96,14 @@
   --t-fast:   100ms;
   --t-base:   150ms;
   --t-slow:   250ms;
+
+  /* ── Sticky-note pastels (paper + border) ─────────────────────────────── */
+  --sticky-yellow:       #fdf6b8; --sticky-yellow-border:  #ecc86a;
+  --sticky-pink:         #fcd6df; --sticky-pink-border:     #ef9fb4;
+  --sticky-mint:         #cfe9da; --sticky-mint-border:    #9bd3b8;
+  --sticky-cyan:         #c9e8ee; --sticky-cyan-border:    #9bd0de;
+  --sticky-violet:       #e4dcf6; --sticky-violet-border:  #c3b0e8;
+  --sticky-coral:        #fcdaca; --sticky-coral-border:   #f0ae93;
 }
 
 /* ── Reset ──────────────────────────────────────────────────────────────── */

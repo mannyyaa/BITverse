@@ -1,21 +1,28 @@
-import { create } from "zustand";
-import type {
-  Workspace,
-  GraphNode,
-  GraphEdge,
-  Query,
-  Reply,
-  TimelineEvent,
-  NodeId,
-  QueryStatus,
-} from "@/domain/types";
-import { demoWorkspace } from "@/data/demoWorkspace";
-import { generateId } from "@/lib/id";
-
 /**
  * Local-first persistence for the current workspace.
- * This is intentionally browser-local; it is not cloud sync or multiplayer.
+ * Browser-local only — not cloud sync or multiplayer. The Zustand store is
+ * the seam: feature components call actions and select state; when Yjs/WS
+ * arrives, internals can be swapped without changing these signatures.
  */
+import { create } from "zustand";
+import type {
+  ArchitectureNode,
+  CanvasEdge,
+  CanvasGraph,
+  CanvasNode,
+  ComponentKind,
+  EdgeId,
+  NodeId,
+  Query,
+  Reply,
+  Stroke,
+  TimelineEvent,
+  Workspace,
+} from "@/domain/types";
+import { generateId } from "@/lib/id";
+import { migrateWorkspace } from "@/lib/canvas";
+import { demoWorkspace } from "@/data/demoWorkspace";
+
 const WORKSPACE_STORAGE_KEY = "bitverse.workspace.v1";
 const GRAPH_HISTORY_STORAGE_KEY = "bitverse.graph-history.v1";
 
@@ -47,13 +54,12 @@ function loadInitialWorkspace(): Workspace {
     if (!raw) return demoWorkspace;
 
     const parsed: unknown = JSON.parse(raw);
-    if (isWorkspaceSnapshot(parsed)) return parsed;
+    if (isWorkspaceSnapshot(parsed)) return migrateWorkspace(parsed);
 
     // A stale/corrupt snapshot should never prevent the app from opening.
     window.localStorage.removeItem(WORKSPACE_STORAGE_KEY);
   } catch {
     // Storage can be unavailable in private/restricted browsing contexts.
-    // Keep the demo usable for the current session in that case.
   }
 
   return demoWorkspace;
@@ -70,8 +76,9 @@ function persistWorkspace(workspace: Workspace) {
 }
 
 interface GraphSnapshot {
-  nodes: GraphNode[];
-  edges: GraphEdge[];
+  nodes: CanvasNode[];
+  edges: CanvasEdge[];
+  strokes: Stroke[];
 }
 
 interface StoredGraphHistory {
@@ -87,18 +94,24 @@ function isGraphSnapshot(value: unknown): value is GraphSnapshot {
 
   const candidate = value as Partial<GraphSnapshot>;
   const hasValidNodes = Array.isArray(candidate.nodes) && candidate.nodes.every((node) =>
-    Boolean(node && typeof node === "object" && typeof (node as GraphNode).id === "string"),
+    Boolean(node && typeof node === "object" && typeof (node as CanvasNode).id === "string"),
   );
   const hasValidEdges = Array.isArray(candidate.edges) && candidate.edges.every((edge) =>
     Boolean(
       edge && typeof edge === "object" &&
-      typeof (edge as GraphEdge).id === "string" &&
-      typeof (edge as GraphEdge).source === "string" &&
-      typeof (edge as GraphEdge).target === "string",
+      typeof (edge as CanvasEdge).id === "string" &&
+      typeof (edge as CanvasEdge).source === "string" &&
+      typeof (edge as CanvasEdge).target === "string",
     ),
   );
 
   return hasValidNodes && hasValidEdges;
+}
+
+/** Coerce a possibly-legacy snapshot (no `strokes`) into a full one. */
+function asGraphSnapshot(value: unknown): GraphSnapshot {
+  const snap = isGraphSnapshot(value) ? value : { nodes: [], edges: [], strokes: [] };
+  return { nodes: snap.nodes, edges: snap.edges, strokes: snap.strokes ?? [] };
 }
 
 function loadGraphHistory(workspaceId: string): Pick<WorkspaceState, "pastGraphStates" | "futureGraphStates"> {
@@ -122,11 +135,10 @@ function loadGraphHistory(workspaceId: string): Pick<WorkspaceState, "pastGraphS
     }
 
     return {
-      pastGraphStates: stored.pastGraphStates.filter(isGraphSnapshot).slice(-MAX_GRAPH_HISTORY),
-      futureGraphStates: stored.futureGraphStates.filter(isGraphSnapshot).slice(0, MAX_GRAPH_HISTORY),
+      pastGraphStates: stored.pastGraphStates.filter(isGraphSnapshot).slice(-MAX_GRAPH_HISTORY).map(asGraphSnapshot),
+      futureGraphStates: stored.futureGraphStates.filter(isGraphSnapshot).slice(0, MAX_GRAPH_HISTORY).map(asGraphSnapshot),
     };
   } catch {
-    // Corrupt or inaccessible history must not stop the workspace from loading.
     return emptyHistory;
   }
 }
@@ -147,10 +159,14 @@ function persistGraphHistory(
 }
 
 function snapshotGraph(workspace: Workspace): GraphSnapshot {
-  return { nodes: workspace.graph.nodes, edges: workspace.graph.edges };
+  return {
+    nodes: workspace.graph.nodes,
+    edges: workspace.graph.edges,
+    strokes: workspace.graph.strokes,
+  };
 }
 
-function recordGraphMutation(state: WorkspaceState, graph: Workspace["graph"]) {
+function recordGraphMutation(state: WorkspaceState, graph: CanvasGraph) {
   return {
     workspace: { ...state.workspace, graph },
     pastGraphStates: [...state.pastGraphStates, snapshotGraph(state.workspace)].slice(-MAX_GRAPH_HISTORY),
@@ -168,17 +184,27 @@ interface WorkspaceState {
   redoGraph: () => void;
 
   // Graph mutations
-  addNode: (node: GraphNode) => void;
-  updateNode: (id: NodeId, patch: Partial<GraphNode>) => void;
+  addNode: (node: CanvasNode) => void;
+  updateNode: (id: NodeId, patch: Partial<CanvasNode>) => void;
   removeNode: (id: NodeId) => void;
-  addEdge: (edge: GraphEdge) => void;
+  removeNodes: (ids: NodeId[]) => void;
+  addEdge: (edge: CanvasEdge) => void;
+  updateEdge: (edgeId: EdgeId, patch: Partial<CanvasEdge>) => void;
   removeEdge: (edgeId: string) => void;
-  setNodes: (nodes: GraphNode[]) => void;
-  setEdges: (edges: GraphEdge[]) => void;
+  removeEdges: (ids: EdgeId[]) => void;
+  setNodes: (nodes: CanvasNode[]) => void;
+  setEdges: (edges: CanvasEdge[]) => void;
+  setStrokes: (strokes: Stroke[]) => void;
+  addStroke: (stroke: Stroke) => void;
+  removeStrokes: (ids: string[]) => void;
+  /** Atomically swap a non-architecture node into an architecture component. */
+  convertNode: (id: NodeId, kind: ComponentKind) => void;
+  /** Replace the whole canvas graph in a single undoable step (for templates). */
+  replaceGraph: (graph: CanvasGraph) => void;
 
   // Query mutations
   addQuery: (query: Omit<Query, "id" | "createdAt" | "thread" | "status">) => void;
-  updateQueryStatus: (queryId: string, status: QueryStatus) => void;
+  updateQueryStatus: (queryId: string, status: Query["status"]) => void;
   addReply: (queryId: string, reply: Omit<Reply, "id" | "createdAt">) => void;
 
   // Timeline
@@ -201,7 +227,11 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       return {
         workspace: {
           ...s.workspace,
-          graph: { ...s.workspace.graph, nodes: previous.nodes, edges: previous.edges },
+          graph: {
+            nodes: previous.nodes,
+            edges: previous.edges,
+            strokes: previous.strokes,
+          },
         },
         pastGraphStates: s.pastGraphStates.slice(0, -1),
         futureGraphStates: [current, ...s.futureGraphStates].slice(0, MAX_GRAPH_HISTORY),
@@ -216,7 +246,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       return {
         workspace: {
           ...s.workspace,
-          graph: { ...s.workspace.graph, nodes: next.nodes, edges: next.edges },
+          graph: { nodes: next.nodes, edges: next.edges, strokes: next.strokes },
         },
         pastGraphStates: [...s.pastGraphStates, current].slice(-MAX_GRAPH_HISTORY),
         futureGraphStates: s.futureGraphStates.slice(1),
@@ -236,6 +266,12 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       return recordGraphMutation(s, { ...s.workspace.graph, edges });
     }),
 
+  setStrokes: (strokes) =>
+    set((s) => {
+      if (strokes === s.workspace.graph.strokes) return s;
+      return recordGraphMutation(s, { ...s.workspace.graph, strokes });
+    }),
+
   addNode: (node) =>
     set((s) => recordGraphMutation(s, {
       ...s.workspace.graph,
@@ -248,7 +284,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       return recordGraphMutation(s, {
         ...s.workspace.graph,
         nodes: s.workspace.graph.nodes.map((n) =>
-          n.id === id ? { ...n, ...patch } : n,
+          n.id === id ? ({ ...n, ...patch } as CanvasNode) : n,
         ),
       });
     }),
@@ -258,9 +294,19 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       if (!s.workspace.graph.nodes.some((node) => node.id === id)) return s;
       return recordGraphMutation(s, {
         nodes: s.workspace.graph.nodes.filter((n) => n.id !== id),
-        edges: s.workspace.graph.edges.filter(
-          (e) => e.source !== id && e.target !== id,
-        ),
+        edges: s.workspace.graph.edges.filter((e) => e.source !== id && e.target !== id),
+        strokes: s.workspace.graph.strokes,
+      });
+    }),
+
+  removeNodes: (ids) =>
+    set((s) => {
+      if (ids.length === 0) return s;
+      const idSet = new Set(ids);
+      return recordGraphMutation(s, {
+        nodes: s.workspace.graph.nodes.filter((n) => !idSet.has(n.id)),
+        edges: s.workspace.graph.edges.filter((e) => !idSet.has(e.source) && !idSet.has(e.target)),
+        strokes: s.workspace.graph.strokes,
       });
     }),
 
@@ -270,14 +316,73 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       edges: [...s.workspace.graph.edges, edge],
     })),
 
+  updateEdge: (edgeId, patch) =>
+    set((s) => {
+      if (!s.workspace.graph.edges.some((e) => e.id === edgeId)) return s;
+      return recordGraphMutation(s, {
+        ...s.workspace.graph,
+        edges: s.workspace.graph.edges.map((e) =>
+          e.id === edgeId ? ({ ...e, ...patch } as CanvasEdge) : e,
+        ),
+      });
+    }),
+
   removeEdge: (edgeId) =>
     set((s) => {
-      if (!s.workspace.graph.edges.some((edge) => edge.id === edgeId)) return s;
+      if (!s.workspace.graph.edges.some((e) => e.id === edgeId)) return s;
       return recordGraphMutation(s, {
         ...s.workspace.graph,
         edges: s.workspace.graph.edges.filter((e) => e.id !== edgeId),
+        strokes: s.workspace.graph.strokes,
       });
     }),
+
+  removeEdges: (ids) =>
+    set((s) => {
+      if (ids.length === 0) return s;
+      const idSet = new Set(ids);
+      return recordGraphMutation(s, {
+        ...s.workspace.graph,
+        edges: s.workspace.graph.edges.filter((e) => !idSet.has(e.id)),
+        strokes: s.workspace.graph.strokes,
+      });
+    }),
+
+  addStroke: (stroke) =>
+    set((s) => recordGraphMutation(s, {
+      ...s.workspace.graph,
+      strokes: [...s.workspace.graph.strokes, stroke],
+    })),
+
+  removeStrokes: (ids) =>
+    set((s) => {
+      if (ids.length === 0) return s;
+      const idSet = new Set(ids);
+      return recordGraphMutation(s, {
+        ...s.workspace.graph,
+        strokes: s.workspace.graph.strokes.filter((st) => !idSet.has(st.id)),
+      });
+    }),
+
+  convertNode: (id, kind) =>
+    set((s) => {
+      const n = s.workspace.graph.nodes.find((x) => x.id === id);
+      if (!n || n.type === "architecture") return s;
+      const label =
+        n.type === "sticky" ? (n.text || "Component")
+        : n.type === "text" ? (n.content || "Component")
+        : (n.label ?? n.title ?? "Component");
+      const arch: ArchitectureNode = {
+        id, type: "architecture", kind, label, status: "healthy",
+        position: n.position, width: n.width, height: n.height,
+      };
+      return recordGraphMutation(s, {
+        ...s.workspace.graph,
+        nodes: s.workspace.graph.nodes.map((x) => (x.id === id ? arch : x)),
+      });
+    }),
+
+  replaceGraph: (graph) => set((s) => recordGraphMutation(s, graph)),
 
   // ── Queries ────────────────────────────────────────────────────────────
   addQuery: (partial) =>
@@ -290,10 +395,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
         thread: [],
       };
       return {
-        workspace: {
-          ...s.workspace,
-          queries: [...s.workspace.queries, query],
-        },
+        workspace: { ...s.workspace, queries: [...s.workspace.queries, query] },
       };
     }),
 
@@ -311,11 +413,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
 
   addReply: (queryId, replyPartial) =>
     set((s) => {
-      const reply: Reply = {
-        ...replyPartial,
-        id: generateId("r"),
-        createdAt: Date.now(),
-      };
+      const reply: Reply = { ...replyPartial, id: generateId("r"), createdAt: Date.now() };
       return {
         workspace: {
           ...s.workspace,
@@ -326,36 +424,28 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       };
     }),
 
-  // ── Timeline ───────────────────────────────────────────────────────────
-  addTimelineEvent: (partial) =>
-    set((s) => {
-      const event: TimelineEvent = {
-        ...partial,
-        id: generateId("t"),
-        timestamp: Date.now(),
-      };
-      return {
-        workspace: {
-          ...s.workspace,
-          timeline: [event, ...s.workspace.timeline],
-        },
-      };
-    }),
+  // ── Timeline ────────────────────────────────────────────────────────────
+  addTimelineEvent: (event) =>
+    set((s) => ({
+      workspace: {
+        ...s.workspace,
+        timeline: [
+          ...s.workspace.timeline,
+          { ...event, id: generateId("t"), timestamp: Date.now() },
+        ],
+      },
+    })),
 }));
 
-
-// Persist workspace content and graph history locally; UI-only state stays ephemeral.
-if (typeof window !== "undefined") {
-  useWorkspaceStore.subscribe((state, previousState) => {
-    if (state.workspace !== previousState.workspace) {
-      persistWorkspace(state.workspace);
-    }
-
-    if (
-      state.pastGraphStates !== previousState.pastGraphStates ||
-      state.futureGraphStates !== previousState.futureGraphStates
-    ) {
-      persistGraphHistory(state.workspace.id, state.pastGraphStates, state.futureGraphStates);
-    }
-  });
-}
+// ── Persistence subscriptions ─────────────────────────────────────────────────
+useWorkspaceStore.subscribe((state, prev) => {
+  if (state.workspace !== prev.workspace) {
+    persistWorkspace(state.workspace);
+  }
+  if (
+    state.pastGraphStates !== prev.pastGraphStates ||
+    state.futureGraphStates !== prev.futureGraphStates
+  ) {
+    persistGraphHistory(state.workspace.id, state.pastGraphStates, state.futureGraphStates);
+  }
+});

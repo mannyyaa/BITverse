@@ -4,6 +4,7 @@ import { useUIStore } from "@/store/uiStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useSimulationStore } from "@/store/simulationStore";
 import { runScenario } from "@/engine/simulation/simulation";
+import { toArchitectureGraph } from "@/lib/canvas";
 import { formatElapsed } from "@/lib/id";
 import { statusColor } from "@/lib/tokens";
 import type { FailureScenario, NodeStatus } from "@/domain/types";
@@ -41,7 +42,7 @@ export function FailureLabPanel() {
   }, [phase, tickElapsed]);
 
   const start = (scenario: FailureScenario) => {
-    const result = runScenario(graph, scenario);
+    const result = runScenario(toArchitectureGraph(graph), scenario);
     startScenario(scenario, result);
     setView("live");
     addTimeline({
@@ -59,7 +60,9 @@ export function FailureLabPanel() {
   if (!isOpen) return null;
 
   const impacted = Object.entries(statuses).filter(([, s]) => s !== "healthy");
-  const healthy  = graph.nodes.filter((n) => (statuses[n.id] ?? "healthy") === "healthy");
+  const healthy  = graph.nodes
+    .filter((n): n is Extract<typeof n, { type: "architecture" }> => n.type === "architecture")
+    .filter((n) => (statuses[n.id] ?? "healthy") === "healthy");
 
   return (
     <div
@@ -305,7 +308,7 @@ export function FailureLabPanel() {
                           flex: 1,
                         }}
                       >
-                        {node?.label ?? nodeId}
+                        {node?.type === "architecture" ? node.label : nodeId}
                       </span>
                       <span
                         style={{

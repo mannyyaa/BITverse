@@ -12,9 +12,11 @@ export function RaiseQueryDialog() {
 
   const addQuery    = useWorkspaceStore((s) => s.addQuery);
   const addTimeline = useWorkspaceStore((s) => s.addTimelineEvent);
-  const nodeName    = useWorkspaceStore((s) =>
-    nodeId ? (s.workspace.graph.nodes.find((n) => n.id === nodeId)?.label ?? nodeId) : "",
-  );
+  const nodeName = useWorkspaceStore((s) => {
+    if (!nodeId) return "";
+    const n = s.workspace.graph.nodes.find((x) => x.id === nodeId);
+    return n && n.type === "architecture" ? n.label : nodeId;
+  });
 
   const [title,    setTitle]    = useState("");
   const [body,     setBody]     = useState("");
