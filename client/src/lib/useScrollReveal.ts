@@ -1,15 +1,20 @@
 import { useEffect, useRef, type RefObject } from "react";
 
 /**
- * Adds `bv-reveal--visible` to the target element once it enters the
- * viewport. The element must already have the `bv-reveal` class applied so
- * its initial hidden state is set in CSS (opacity 0, translateY).
+ * Scroll-reveal hook.
  *
- * Respects `prefers-reduced-motion` — the CSS already handles that, but we
- * also skip the observer entirely so there are no layout side-effects.
+ * Content is ALWAYS visible without JS (the CSS starts fully visible).
+ * On first use this hook adds `.bv-anim-ready` to the <main class="bv-landing">
+ * ancestor, which opts the page into the hide-then-reveal behaviour.
+ *
+ * If the IntersectionObserver fires successfully it adds `.bv-reveal--visible`.
+ * A safety timeout (800 ms) adds the class regardless, so a failed or
+ * throttled observer can never leave content permanently hidden.
+ *
+ * Respects prefers-reduced-motion: skips the hidden-start state entirely.
  */
 export function useScrollReveal<T extends Element = HTMLDivElement>(
-  threshold = 0.12,
+  threshold = 0.1,
 ): RefObject<T | null> {
   const ref = useRef<T | null>(null);
 
@@ -21,14 +26,27 @@ export function useScrollReveal<T extends Element = HTMLDivElement>(
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    // Always make the element visible immediately for reduced-motion users.
     if (prefersReducedMotion) {
       el.classList.add("bv-reveal--visible");
       return;
     }
 
+    // Opt the page into animation by marking the <main> ancestor.
+    const landing = el.closest(".bv-landing");
+    if (landing && !landing.classList.contains("bv-anim-ready")) {
+      landing.classList.add("bv-anim-ready");
+    }
+
+    // Safety: guarantee visibility after 800 ms regardless of observer.
+    const safetyId = window.setTimeout(() => {
+      el.classList.add("bv-reveal--visible");
+    }, 800);
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
+          window.clearTimeout(safetyId);
           entry.target.classList.add("bv-reveal--visible");
           observer.disconnect();
         }
@@ -37,7 +55,10 @@ export function useScrollReveal<T extends Element = HTMLDivElement>(
     );
 
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      window.clearTimeout(safetyId);
+      observer.disconnect();
+    };
   }, [threshold]);
 
   return ref;

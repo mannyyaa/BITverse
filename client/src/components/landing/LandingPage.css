@@ -324,3 +324,236 @@
   .bv-hero-copy, .bv-hero-visual, .bv-floating-note { animation: none !important; }
   .bv-button, .bv-feature-card, .bv-feature-card::before, .bv-feature-underline { transition: none !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WORKFLOW SECTION — rich background
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.bv-section--workflow {
+  position: relative;
+  isolation: isolate;
+  /* Richer gradient: warm left → cool lilac centre → soft sage right */
+  background: linear-gradient(
+    135deg,
+    #f0edf8 0%,
+    #eceaf5 18%,
+    #f0f5f1 52%,
+    #edf3f5 78%,
+    #f2f0f8 100%
+  ) !important;
+  overflow: hidden;
+}
+
+/* Large corner orbs — pure CSS, no extra markup */
+.bv-section--workflow::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  top: -180px;
+  right: -160px;
+  background: radial-gradient(
+    circle,
+    rgba(137, 117, 216, 0.13) 0%,
+    rgba(107, 164, 197, 0.07) 50%,
+    transparent 72%
+  );
+  pointer-events: none;
+}
+.bv-section--workflow::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  bottom: -140px;
+  left: -120px;
+  background: radial-gradient(
+    circle,
+    rgba(120, 160, 138, 0.14) 0%,
+    rgba(120, 160, 138, 0.04) 55%,
+    transparent 72%
+  );
+  pointer-events: none;
+}
+
+/* The SVG background layer */
+.bv-workflow-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.bv-workflow-bg-svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(100%, 900px);
+  height: auto;
+}
+
+/* Push content above the bg layer */
+.bv-section--workflow .bv-workflow-copy,
+.bv-section--workflow .bv-steps-list {
+  position: relative;
+  z-index: 1;
+}
+
+/* Step cards get a crisper glass-like surface against the new bg */
+.bv-step {
+  background: rgba(255, 255, 255, 0.62) !important;
+  backdrop-filter: blur(6px);
+  border-radius: var(--r-md, 8px);
+  border-bottom: 1px solid rgba(225, 220, 235, 0.9) !important;
+}
+.bv-step:first-child {
+  border-top: 1px solid rgba(225, 220, 235, 0.9);
+  border-radius: var(--r-md, 8px) var(--r-md, 8px) 0 0;
+}
+.bv-step:last-child {
+  border-radius: 0 0 var(--r-md, 8px) var(--r-md, 8px);
+}
+.bv-step:hover {
+  background: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Accent left border on the step number for each colour */
+.bv-step:nth-child(1) .bv-step-number { box-shadow: inset 0 0 0 1px rgba(137,117,216,.25); }
+.bv-step:nth-child(2) .bv-step-number { box-shadow: inset 0 0 0 1px rgba(89,142,172,.25); }
+.bv-step:nth-child(3) .bv-step-number { box-shadow: inset 0 0 0 1px rgba(189,131,93,.25); }
+.bv-step:nth-child(4) .bv-step-number { box-shadow: inset 0 0 0 1px rgba(100,139,117,.25); }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FAILURE LAB SECTION — rich background
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.bv-failure-section {
+  position: relative;
+  isolation: isolate;
+  /* Deep warm-to-amber gradient evoking heat / alert */
+  background: linear-gradient(
+    148deg,
+    #fdf9f6 0%,
+    #faf4ee 22%,
+    #f8f0e8 48%,
+    #faf5f0 74%,
+    #fdfaf7 100%
+  ) !important;
+  overflow: hidden;
+}
+
+/* Top-right pulse glow */
+.bv-failure-section::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  top: -200px;
+  right: -180px;
+  background: radial-gradient(
+    circle,
+    rgba(207, 115, 122, 0.11) 0%,
+    rgba(214, 154, 111, 0.07) 45%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* Bottom-left cool counterpoint */
+.bv-failure-section::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  bottom: -150px;
+  left: -130px;
+  background: radial-gradient(
+    circle,
+    rgba(120, 160, 138, 0.1) 0%,
+    transparent 68%
+  );
+  pointer-events: none;
+}
+
+/* SVG diagnostic-grid background */
+.bv-failure-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.bv-failure-bg-svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(100%, 900px);
+  height: auto;
+}
+
+/* Push content above bg */
+.bv-failure-section .bv-failure-copy,
+.bv-failure-section .bv-failure-card {
+  position: relative;
+  z-index: 1;
+}
+
+/* Failure card gets a warmer, more pronounced shadow on the new bg */
+.bv-failure-card {
+  box-shadow:
+    0 24px 64px rgba(68, 48, 32, 0.1),
+    0 4px 16px rgba(68, 48, 32, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  border-color: #e6ddd4 !important;
+}
+
+/* Animated pulse rings on the failure-pulse dot to reinforce the "alert" theme */
+.bv-failure-pulse {
+  position: relative;
+}
+.bv-failure-pulse::before,
+.bv-failure-pulse::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(214, 154, 111, 0.55);
+  animation: bv-pulse-ring 2.4s ease-out infinite;
+}
+.bv-failure-pulse::after {
+  inset: -8px;
+  border-color: rgba(207, 115, 122, 0.3);
+  animation-delay: 0.8s;
+}
+
+@keyframes bv-pulse-ring {
+  0%   { transform: scale(1);   opacity: 1; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+/* Scenario node dots — pulsing colours matching status */
+.bv-scenario-node--down .bv-scenario-dot {
+  animation: bv-dot-alert 1.6s steps(1) infinite;
+}
+@keyframes bv-dot-alert {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+/* ── Reduced motion overrides ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .bv-failure-pulse::before,
+  .bv-failure-pulse::after { animation: none !important; }
+  .bv-scenario-node--down .bv-scenario-dot { animation: none !important; }
+}
