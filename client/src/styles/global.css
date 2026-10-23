@@ -1,0 +1,251 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   BITverse Design System — Figma-inspired Light Theme
+   Soft, sophisticated, multicolour. Precise. Professional.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  color-scheme: light;
+
+  /* ── Canvas / Page ─────────────────────────────────────────────────────── */
+  --canvas-bg:      #f7f8fa;       /* very light cool grey — canvas surface  */
+  --canvas-dot:     #dde1e9;       /* dot-grid colour                         */
+
+  /* ── Surfaces ──────────────────────────────────────────────────────────── */
+  --surface-0:      #ffffff;       /* top-level panels, dialogs               */
+  --surface-1:      #f7f8fa;       /* secondary surfaces                      */
+  --surface-2:      #eef0f5;       /* hover states, inset areas               */
+  --surface-3:      #e4e7ef;       /* deeper inset, selected row bg           */
+
+  /* ── Borders ───────────────────────────────────────────────────────────── */
+  --border:         #e2e5ee;       /* default border                          */
+  --border-strong:  #c8cdd9;       /* stronger separator                      */
+  --border-focus:   #6c5ce7;       /* focus ring                              */
+
+  /* ── Typography ────────────────────────────────────────────────────────── */
+  --text-primary:   #0f1117;       /* headings, primary labels                */
+  --text-secondary: #4a5168;       /* body copy, descriptions                 */
+  --text-tertiary:  #7c849a;       /* captions, placeholders                  */
+  --text-disabled:  #b0b7c9;       /* disabled states                         */
+  --text-inverse:   #ffffff;       /* text on coloured backgrounds            */
+
+  /* ── Brand Accents ─────────────────────────────────────────────────────── */
+  --accent-violet:  #6c5ce7;       /* primary brand — violet (Figma-like)     */
+  --accent-blue:    #0984e3;       /* links, info states                      */
+  --accent-cyan:    #00b4d8;       /* data flow, connections                  */
+  --accent-green:   #00b894;       /* success, healthy status                 */
+  --accent-amber:   #e17055;       /* warning, degraded status                */
+  --accent-red:     #d63031;       /* danger, down status, failure            */
+  --accent-pink:    #e84393;       /* queries, annotations                    */
+  --accent-teal:    #00cec9;       /* secondary connections                   */
+
+  /* ── Semantic colours ──────────────────────────────────────────────────── */
+  --status-healthy:    #00b894;
+  --status-degraded:   #e17055;
+  --status-overloaded: #d63031;
+  --status-down:       #d63031;
+
+  --priority-low:      #00b894;
+  --priority-medium:   #0984e3;
+  --priority-high:     #e17055;
+  --priority-critical: #d63031;
+
+  /* ── Node category colours ─────────────────────────────────────────────── */
+  --cat-application:    #6c5ce7;   /* violet */
+  --cat-compute:        #0984e3;   /* blue   */
+  --cat-data:           #00b894;   /* green  */
+  --cat-messaging:      #e17055;   /* amber  */
+  --cat-infrastructure: #7c849a;   /* slate  */
+
+  /* ── Typography ────────────────────────────────────────────────────────── */
+  --font-ui:    'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-head:  'Space Grotesk', 'Inter', sans-serif;
+  --font-mono:  'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+  /* ── Spacing scale (4px base) ──────────────────────────────────────────── */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+
+  /* ── Radius ────────────────────────────────────────────────────────────── */
+  --r-xs:  3px;
+  --r-sm:  5px;
+  --r-md:  8px;
+  --r-lg:  12px;
+  --r-xl:  16px;
+  --r-full: 9999px;
+
+  /* ── Elevation / Shadow ────────────────────────────────────────────────── */
+  --shadow-xs:  0 1px 2px rgba(15,17,23,.06);
+  --shadow-sm:  0 1px 3px rgba(15,17,23,.08), 0 1px 2px rgba(15,17,23,.06);
+  --shadow-md:  0 4px 6px rgba(15,17,23,.06), 0 2px 4px rgba(15,17,23,.05);
+  --shadow-lg:  0 10px 24px rgba(15,17,23,.08), 0 4px 8px rgba(15,17,23,.05);
+  --shadow-xl:  0 20px 40px rgba(15,17,23,.10), 0 8px 16px rgba(15,17,23,.06);
+
+  /* ── Glow (for selected / active states) ──────────────────────────────── */
+  --glow-violet: 0 0 0 3px rgba(108,92,231,.18);
+  --glow-blue:   0 0 0 3px rgba(9,132,227,.18);
+  --glow-green:  0 0 0 3px rgba(0,184,148,.18);
+
+  /* ── Transitions ───────────────────────────────────────────────────────── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --t-fast:   100ms;
+  --t-base:   150ms;
+  --t-slow:   250ms;
+}
+
+/* ── Reset ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background: var(--surface-1);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Scrollbars ─────────────────────────────────────────────────────────── */
+::-webkit-scrollbar         { width: 5px; height: 5px; }
+::-webkit-scrollbar-track   { background: transparent; }
+::-webkit-scrollbar-thumb   { background: var(--border-strong); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-disabled); }
+
+/* ── Typography ─────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-head);
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+code, pre, .mono {
+  font-family: var(--font-mono);
+}
+a {
+  color: var(--accent-violet);
+  text-decoration: none;
+}
+
+/* ── Accessibility ──────────────────────────────────────────────────────── */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+:focus-visible {
+  outline: 2px solid var(--accent-violet);
+  outline-offset: 2px;
+  border-radius: var(--r-xs);
+}
+
+/* ── React Flow overrides (light) ───────────────────────────────────────── */
+.react-flow {
+  background: var(--canvas-bg) !important;
+}
+.react-flow__background {
+  background: var(--canvas-bg) !important;
+}
+.react-flow__pane {
+  cursor: default;
+}
+.react-flow__minimap {
+  background: var(--surface-0) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-md) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+.react-flow__minimap-node {
+  fill: var(--surface-2) !important;
+  stroke: var(--border-strong) !important;
+}
+.react-flow__controls {
+  background: var(--surface-0) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-md) !important;
+  box-shadow: var(--shadow-md) !important;
+  gap: 2px !important;
+}
+.react-flow__controls-button {
+  background: var(--surface-0) !important;
+  border: none !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text-secondary) !important;
+  fill: var(--text-secondary) !important;
+  width: 26px !important;
+  height: 26px !important;
+}
+.react-flow__controls-button:last-child {
+  border-bottom: none !important;
+}
+.react-flow__controls-button:hover {
+  background: var(--surface-2) !important;
+  fill: var(--text-primary) !important;
+}
+.react-flow__edge-path {
+  stroke: var(--border-strong) !important;
+  stroke-width: 1.5px !important;
+}
+.react-flow__edge.selected .react-flow__edge-path,
+.react-flow__edge:focus .react-flow__edge-path {
+  stroke: var(--accent-violet) !important;
+}
+.react-flow__connection-path {
+  stroke: var(--accent-violet) !important;
+  stroke-width: 1.5px !important;
+  stroke-dasharray: 4 3 !important;
+}
+.react-flow__handle {
+  width: 8px !important;
+  height: 8px !important;
+  background: var(--surface-0) !important;
+  border: 1.5px solid var(--border-strong) !important;
+  border-radius: 50% !important;
+  transition: border-color var(--t-fast), background var(--t-fast), box-shadow var(--t-fast);
+}
+.react-flow__handle:hover,
+.react-flow__handle-connecting {
+  background: var(--accent-violet) !important;
+  border-color: var(--accent-violet) !important;
+  box-shadow: var(--glow-violet) !important;
+}
+.react-flow__node.selected > div,
+.react-flow__node:focus > div {
+  box-shadow: var(--shadow-md), var(--glow-violet) !important;
+  border-color: var(--accent-violet) !important;
+}
+
+/* ── Canvas dot-grid ────────────────────────────────────────────────────── */
+.canvas-dot-grid {
+  background-image: radial-gradient(circle, var(--canvas-dot) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* ── Utility classes ────────────────────────────────────────────────────── */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

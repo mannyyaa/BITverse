@@ -1,8 +1,5 @@
+// Header is handled per-view (WorkspaceView, Dashboard, LandingPage).
+// This file is kept as a stub.
 export function AppHeader() {
-  return (
-    <header className="app-header">
-      <span className="app-logo">BITverse</span>
-      <span className="app-tagline">Build It Together</span>
-    </header>
-  );
+  return null;
 }

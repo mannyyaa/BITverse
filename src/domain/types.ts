@@ -1,59 +1,75 @@
 /**
  * BITverse domain model.
  *
- * Single source of truth for the data shapes shared across features
- * (canvas, queries, failure lab, timeline) and the pure engine.
- * Keep this file free of UI concerns and framework imports — anything
- * that imports React belongs in `features/`, not here.
+ * Single source of truth for all data shapes shared across features.
+ * Keep this file free of UI concerns and framework imports.
  */
 
-/** Kinds of components a user can place on the canvas. */
-export type ComponentKind = "service" | "database" | "api" | "cache" | "queue";
+// ── Component kinds ──────────────────────────────────────────────────────────
 
-/** Runtime health of a component, mutated by the simulation engine. */
+export type ComponentKind =
+  | "web-client"
+  | "mobile-client"
+  | "api-gateway"
+  | "load-balancer"
+  | "service"
+  | "worker"
+  | "serverless"
+  | "database"
+  | "cache"
+  | "object-storage"
+  | "message-queue"
+  | "event-stream"
+  | "cdn"
+  | "external-api"
+  | "firewall";
+
+// ── Node status ──────────────────────────────────────────────────────────────
+
 export type NodeStatus = "healthy" | "degraded" | "overloaded" | "down";
 
 export type NodeId = string;
 export type EdgeId = string;
 
-/** Reference to a graph element a query can be attached to. */
-export type QueryTarget =
-  | { kind: "node"; id: NodeId }
-  | { kind: "edge"; id: EdgeId };
+// ── Graph ────────────────────────────────────────────────────────────────────
 
-/** A component on the canvas. Position is read by the canvas + engine. */
 export interface GraphNode {
   id: NodeId;
   kind: ComponentKind;
   label: string;
   status: NodeStatus;
-  /** React Flow owns writing position during drag; everything else reads it. */
   position: { x: number; y: number };
+  /** Optional display metadata shown in the node card */
+  meta?: {
+    metric?: string;   // e.g. "1.2k req/s"
+    detail?: string;   // e.g. "68% capacity"
+  };
 }
 
-/** A directed data-flow connection between two components. */
 export interface GraphEdge {
   id: EdgeId;
   source: NodeId;
   target: NodeId;
   label?: string;
+  /** Visual style for degraded/failure connections */
+  status?: "normal" | "degraded" | "severed";
+  animated?: boolean;
 }
 
-/** The full architecture graph: what gets persisted and simulated. */
 export interface ArchitectureGraph {
   nodes: GraphNode[];
   edges: GraphEdge[];
 }
 
-/** A threaded discussion pinned to a node or edge. */
-export interface Query {
-  id: string;
-  target: QueryTarget;
-  author: string;
-  body: string;
-  createdAt: number;
-  thread: Reply[];
-}
+// ── Queries / Discussions ────────────────────────────────────────────────────
+
+export type QueryTarget =
+  | { kind: "node"; id: NodeId }
+  | { kind: "edge"; id: EdgeId };
+
+export type QueryType = "question" | "issue" | "improvement";
+export type QueryStatus = "open" | "in-discussion" | "resolved";
+export type Priority = "low" | "medium" | "high" | "critical";
 
 export interface Reply {
   id: string;
@@ -62,15 +78,50 @@ export interface Reply {
   createdAt: number;
 }
 
-/** Canned failure scenarios for the Failure Lab. */
-export type SimulationScenario =
-  | { id: string; kind: "nodeDown"; targetId: NodeId }
-  | { id: string; kind: "trafficSpike"; targetId: NodeId; multiplier: number }
-  | { id: string; kind: "dependencyOutage"; edgeId: EdgeId };
+export interface Query {
+  id: string;
+  title: string;
+  body: string;
+  type: QueryType;
+  status: QueryStatus;
+  priority: Priority;
+  target: QueryTarget;
+  author: string;
+  assignee?: string;
+  createdAt: number;
+  resolvedAt?: number;
+  thread: Reply[];
+}
 
-/** Discrete snapshot of the simulation across one tick. */
+// ── Simulation ───────────────────────────────────────────────────────────────
+
+export type ScenarioKind =
+  | "database-outage"
+  | "traffic-spike"
+  | "network-partition"
+  | "service-failure";
+
+export interface FailureScenario {
+  id: string;
+  kind: ScenarioKind;
+  name: string;
+  description: string;
+  difficulty: "easy" | "medium" | "hard";
+  impact: string;
+  /** Primary node targeted by this scenario */
+  primaryTarget: NodeId;
+  /** Additional nodes / edges affected */
+  affectedNodes?: NodeId[];
+  affectedEdges?: EdgeId[];
+}
+
+export type SimulationPhase = "idle" | "running" | "paused" | "complete";
+
 export interface SimulationState {
+  phase: SimulationPhase;
+  scenarioId: string | null;
   tick: number;
+  elapsedSeconds: number;
   statuses: Record<NodeId, NodeStatus>;
   log: SimulationLogEntry[];
 }
@@ -78,6 +129,59 @@ export interface SimulationState {
 export interface SimulationLogEntry {
   tick: number;
   nodeId: NodeId;
+  previousStatus: NodeStatus;
   status: NodeStatus;
   reason: string;
+}
+
+// ── Timeline / History ───────────────────────────────────────────────────────
+
+export type TimelineEventKind =
+  | "workspace-created"
+  | "node-added"
+  | "node-removed"
+  | "edge-added"
+  | "edge-removed"
+  | "query-raised"
+  | "query-resolved"
+  | "simulation-started"
+  | "simulation-complete"
+  | "snapshot-saved"
+  | "architecture-improved";
+
+export interface TimelineEvent {
+  id: string;
+  kind: TimelineEventKind;
+  description: string;
+  author: string;
+  timestamp: number;
+  nodeId?: NodeId;
+  queryId?: string;
+  snapshotId?: string;
+}
+
+// ── Collaborators ────────────────────────────────────────────────────────────
+
+export interface Collaborator {
+  id: string;
+  name: string;
+  color: string;
+  initials: string;
+  online: boolean;
+  cursor?: { x: number; y: number };
+}
+
+// ── Workspace ────────────────────────────────────────────────────────────────
+
+export interface Workspace {
+  id: string;
+  name: string;
+  description?: string;
+  createdAt: number;
+  updatedAt: number;
+  graph: ArchitectureGraph;
+  queries: Query[];
+  timeline: TimelineEvent[];
+  collaborators: Collaborator[];
+  scenarios: FailureScenario[];
 }

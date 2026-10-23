@@ -1,0 +1,11 @@
+{
+  "name": "@bitverse/server",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "BITverse backend — reserved for Phase 2. Will provide REST API, WebSocket collaboration (Yjs/y-websocket), and PostgreSQL persistence.",
+  "scripts": {
+    "dev": "echo 'Server not yet implemented'",
+    "build": "echo 'Server not yet implemented'"
+  }
+}
