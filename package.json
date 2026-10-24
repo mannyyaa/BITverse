@@ -1,14 +1,14 @@
 {
-  "name": "bitverse-root",
+  "name": "bitverse-monorepo",
   "private": true,
-  "version": "0.0.0",
   "workspaces": [
     "client",
     "server"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace=client",
-    "build": "npm run build --workspace=client",
-    "typecheck": "npm run typecheck --workspace=client"
+    "dev:client": "npm run dev -w client",
+    "dev:server": "npm run dev -w server",
+    "build:client": "npm run build -w client",
+    "install:all": "npm install"
   }
 }
