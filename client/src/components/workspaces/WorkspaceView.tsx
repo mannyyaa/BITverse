@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   MousePointer2, Hand, StickyNote, Type, Pen, Highlighter, Eraser,
   Shapes, Frame, Spline, MessageSquarePlus, Boxes,
-  RotateCcw, RotateCw, Users, FlaskConical, X,
+  RotateCcw, RotateCw, Users, FlaskConical, ShieldCheck, X,
   type LucideIcon,
 } from "lucide-react";
 import { ReactFlowProvider } from "@xyflow/react";
@@ -12,6 +12,8 @@ import { Inspector } from "@/components/inspector/Inspector";
 import { QueryPanel } from "@/components/queries/QueryPanel";
 import { TimelinePanel } from "@/components/timeline/TimelinePanel";
 import { FailureLabPanel } from "@/components/failure-lab/FailureLabPanel";
+import { ArchitectureHealthPanel } from "@/components/health/ArchitectureHealthPanel";
+import { analyzeArchitecture } from "@/engine/health/architectureHealth";
 import { RaiseQueryDialog } from "@/components/queries/RaiseQueryDialog";
 import { InviteDialog } from "@/components/workspaces/InviteDialog";
 import { Avatar } from "@/components/ui/Avatar";
@@ -90,6 +92,11 @@ export function WorkspaceView() {
   } = useUIStore();
 
   const simPhase = useSimulationStore((s) => s.phase);
+  const [isHealthCheckOpen, setHealthCheckOpen] = useState(false);
+  const healthFindings = useMemo(
+    () => analyzeArchitecture(workspace.graph.nodes, workspace.graph.edges),
+    [workspace.graph.nodes, workspace.graph.edges],
+  );
   const [hovered, setHovered] = useState<{ id: ActiveTool; top: number } | null>(null);
 
   useEffect(() => {
@@ -167,8 +174,36 @@ export function WorkspaceView() {
           <Users size={12} /> Invite
         </button>
         <Divider />
-
         <button
+          className="bv-health-check-btn"
+          onClick={() => setHealthCheckOpen(true)}
+          title="Run structural checks on architecture components and data-flow edges"
+          aria-label={`Open Architecture Health Check, ${healthFindings.length} findings`}
+          aria-expanded={isHealthCheckOpen}
+          style={{
+            display: "flex", alignItems: "center", gap: 6, padding: "6px 10px",
+            background: "color-mix(in srgb, var(--accent-violet) 10%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--accent-violet) 28%, transparent)",
+            borderRadius: "var(--r-full)", color: "var(--accent-violet)",
+            fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-ui)",
+            whiteSpace: "nowrap", transition: "all var(--t-base)",
+          }}
+        >
+          <ShieldCheck size={13} />
+          <span>Health Check</span>
+          <span style={{
+            minWidth: 16, height: 16, padding: "0 4px", display: "inline-flex",
+            alignItems: "center", justifyContent: "center", borderRadius: "var(--r-full)",
+            background: healthFindings.some((f) => f.severity === "critical")
+              ? "var(--accent-red)"
+              : healthFindings.some((f) => f.severity === "warning")
+              ? "var(--accent-amber)" : "var(--surface-3)",
+            color: healthFindings.some((f) => f.severity === "critical" || f.severity === "warning")
+              ? "#fff" : "var(--text-secondary)",
+            fontSize: 9, fontFamily: "var(--font-mono)",
+          }}>{healthFindings.length}</span>
+        </button>
+                <button
           className="bv-failure-lab-btn"
           onClick={() => setFailureLabOpen(true)}
           title="Open the Failure Lab — run what-if scenarios on your architecture"
@@ -286,6 +321,7 @@ export function WorkspaceView() {
       </div>
 
       <FailureLabPanel />
+      {isHealthCheckOpen && <ArchitectureHealthPanel onClose={() => setHealthCheckOpen(false)} />}
       <RaiseQueryDialog />
       <InviteDialog />
     </div>

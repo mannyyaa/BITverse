@@ -1,4 +1,4 @@
-import { Plus, ChevronRight, Clock, Zap, Users } from "lucide-react";
+import { ArrowUpRight, Boxes, GitBranch, MessageSquareText, Plus, ChevronRight, Clock, Zap, Users } from "lucide-react";
 import { useUIStore } from "@/store/uiStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { formatTime } from "@/lib/id";
@@ -97,6 +97,50 @@ export function Dashboard() {
           <QuickAction icon={<Users size={14} />}   label="Open Workspace"   color="var(--accent-blue)"   onClick={() => setView("workspace")} />
           <QuickAction icon={<Zap size={14} />}     label="Open Failure Lab" color="var(--accent-red)"    onClick={openFailureLab} />
         </div>
+
+        {/* Workspace spotlight — a visual entry point into the architecture canvas */}
+        <section className="bv-dashboard-spotlight" aria-labelledby="bv-dashboard-spotlight-title">
+          <div className="bv-spotlight-copy">
+            <div className="bv-spotlight-eyebrow"><span className="bv-spotlight-live-dot" /> YOUR SYSTEM, IN CONTEXT</div>
+            <h2 id="bv-dashboard-spotlight-title">Make your architecture <span>make sense.</span></h2>
+            <p>Model components, connect the data flow, discuss trade-offs, and pressure-test failure paths — all in one design workspace.</p>
+            <div className="bv-spotlight-metrics">
+              <span><Boxes size={13} /> {workspace.graph.nodes.filter((node) => node.type === "architecture").length} components</span>
+              <span><GitBranch size={13} /> {workspace.graph.edges.filter((edge) => edge.kind === "dataflow").length} data flows</span>
+              <span><MessageSquareText size={13} /> {workspace.queries.filter((q) => q.status !== "resolved").length} open questions</span>
+            </div>
+            <button className="bv-spotlight-cta" onClick={() => setView("workspace")}>
+              Continue building <ArrowUpRight size={15} />
+            </button>
+          </div>
+          <div className="bv-spotlight-art" aria-hidden="true">
+            <div className="bv-spotlight-orbit bv-spotlight-orbit-one" />
+            <div className="bv-spotlight-orbit bv-spotlight-orbit-two" />
+            <div className="bv-spotlight-window">
+              <div className="bv-spotlight-windowbar">
+                <span className="bv-spotlight-window-dots"><i /><i /><i /></span>
+                <span>BITVERSE / SYSTEM MAP</span>
+                <span className="bv-spotlight-demo-tag">DESIGN VIEW</span>
+              </div>
+              <div className="bv-spotlight-map">
+                <svg className="bv-spotlight-connectors" viewBox="0 0 460 180" preserveAspectRatio="none">
+                  <path d="M 94 91 C 118 91, 120 91, 143 91" />
+                  <path d="M 233 91 C 259 91, 263 46, 291 46" />
+                  <path d="M 233 91 C 259 91, 263 135, 291 135" />
+                  <path d="M 373 46 C 400 46, 397 91, 418 91" />
+                  <path d="M 373 135 C 400 135, 397 91, 418 91" />
+                </svg>
+                <div className="bv-spotlight-node bv-spotlight-node-client"><span className="bv-spotlight-node-icon client">W</span><span>Web client<small>Entry point</small></span></div>
+                <div className="bv-spotlight-node bv-spotlight-node-api"><span className="bv-spotlight-node-icon api">↗</span><span>API gateway<small>Routing</small></span></div>
+                <div className="bv-spotlight-node bv-spotlight-node-product"><span className="bv-spotlight-node-icon product">S</span><span>Service<small>Business logic</small></span></div>
+                <div className="bv-spotlight-node bv-spotlight-node-orders"><span className="bv-spotlight-node-icon orders">Q</span><span>Queue<small>Async work</small></span></div>
+                <div className="bv-spotlight-node bv-spotlight-node-db"><span className="bv-spotlight-node-icon db">D</span><span>Database<small>Persistence</small></span></div>
+              </div>
+            </div>
+            <div className="bv-spotlight-float bv-spotlight-float-health"><span /> Structure at a glance</div>
+            <div className="bv-spotlight-float bv-spotlight-float-query"><MessageSquareText size={12} /> Decisions stay attached</div>
+          </div>
+        </section>
 
         {/* Two columns */}
         <div className="bv-dashboard-grid" style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 24, alignItems: "start" }}>

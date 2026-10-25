@@ -17,6 +17,7 @@ import {
   type NodeChange,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import { Boxes, GitBranch } from "lucide-react";
 
 import { SystemNode } from "@/components/nodes/SystemNode";
 import { StickyNoteNode } from "@/components/nodes/StickyNoteNode";
@@ -143,6 +144,7 @@ function edgeToRF(e: CanvasEdge, selectedId: string | null, simPhase: string): E
 
 export function CanvasStage() {
   const graphNodes = useWorkspaceStore((s) => s.workspace.graph.nodes);
+  const workspaceName = useWorkspaceStore((s) => s.workspace.name);
   const graphEdges = useWorkspaceStore((s) => s.workspace.graph.edges);
   const queries = useWorkspaceStore((s) => s.workspace.queries);
   const setNodes = useWorkspaceStore((s) => s.setNodes);
@@ -326,6 +328,23 @@ export function CanvasStage() {
         maxZoom={2.5}
       >
         <Background variant={BackgroundVariant.Dots} gap={22} size={1.2} color="var(--canvas-dot)" />
+        <Panel position="top-left" className="bv-canvas-hud-panel">
+          <div className="bv-canvas-hud">
+            <div className="bv-canvas-hud-overline"><span className="bv-canvas-hud-dot" /> ARCHITECTURE CANVAS</div>
+            <div className="bv-canvas-hud-title">{workspaceName}<span>LIVE MAP</span></div>
+            <div className="bv-canvas-hud-stats">
+              <span><Boxes size={12} /> {graphNodes.filter((node) => node.type === "architecture").length} components</span>
+              <span><GitBranch size={12} /> {graphEdges.filter((edge) => edge.kind === "dataflow").length} flows</span>
+            </div>
+          </div>
+        </Panel>
+        <Panel position="top-right" className="bv-canvas-shortcuts-panel">
+          <div className="bv-canvas-shortcuts" aria-label="Canvas keyboard shortcuts">
+            <span className={activeTool === "select" ? "is-current" : ""}><kbd>V</kbd> Select</span>
+            <span className={activeTool === "hand" ? "is-current" : ""}><kbd>H</kbd> Pan</span>
+            <span className={activeTool === "connector" ? "is-current" : ""}><kbd>C</kbd> Connect</span>
+          </div>
+        </Panel>
         <Controls position="bottom-right" style={{ bottom: 90 }} showInteractive={false} />
         <MiniMap
           position="bottom-right"
