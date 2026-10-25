@@ -50,6 +50,12 @@ web_modules/
 # Optional npm cache directory
 .npm
 
+#Agents
+.agents/
+.claude/
+.cursor/
+.devin/
+
 # Optional eslint cache
 .eslintcache
 
@@ -147,3 +153,5 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+explanation.md
