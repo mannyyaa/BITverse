@@ -300,11 +300,40 @@ function EdgeInspector({ edge }: { edge: CanvasEdge }) {
   const removeEdge = useWorkspaceStore((s) => s.removeEdge);
   const selectEdge = useUIStore((s) => s.selectEdge);
   const nodes = useWorkspaceStore((s) => s.workspace.graph.nodes);
+  const edges = useWorkspaceStore((s) => s.workspace.graph.edges);
+  const [endpointError, setEndpointError] = useState<string | null>(null);
   const src = nodes.find((n) => n.id === edge.source);
   const tgt = nodes.find((n) => n.id === edge.target);
-  const nameOf = (n?: CanvasNode) => n ? ("label" in n ? n.label : "content" in n ? n.content || "Text" : n.type) : "?";
+  const nameOf = (n?: CanvasNode): string => {
+    if (!n) return "Unknown component";
+    if ("label" in n && typeof n.label === "string" && n.label.trim()) return n.label.trim();
+    if ("title" in n && typeof n.title === "string" && n.title.trim()) return n.title.trim();
+    if ("text" in n && typeof n.text === "string" && n.text.trim()) return n.text.trim();
+    if ("content" in n && typeof n.content === "string" && n.content.trim()) return n.content.trim();
+    return n.type;
+  };
 
   const convert = (kind: EdgeKind) => updateEdge(edge.id, { kind });
+  const changeEndpoint = (field: "source" | "target", value: string) => {
+    const source = field === "source" ? value : edge.source;
+    const target = field === "target" ? value : edge.target;
+
+    if (source === target) {
+      setEndpointError("A connector must link two different objects.");
+      return;
+    }
+
+    const duplicate = edges.some(
+      (candidate) => candidate.id !== edge.id && candidate.source === source && candidate.target === target,
+    );
+    if (duplicate) {
+      setEndpointError("That connection already exists.");
+      return;
+    }
+
+    updateEdge(edge.id, field === "source" ? { source } : { target });
+    setEndpointError(null);
+  };
 
   return (
     <>
@@ -316,6 +345,42 @@ function EdgeInspector({ edge }: { edge: CanvasEdge }) {
           <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{nameOf(tgt)}</span>
         </div>
       </div>
+
+      <Section title="From node">
+        <select
+          aria-label="Connector source node"
+          value={edge.source}
+          onChange={(e) => changeEndpoint("source", e.target.value)}
+          style={inputStyle}
+        >
+          {nodes.map((n) => (
+            <option key={n.id} value={n.id} disabled={n.id === edge.target}>
+              {nameOf(n)}
+            </option>
+          ))}
+        </select>
+      </Section>
+
+      <Section title="To node">
+        <select
+          aria-label="Connector destination node"
+          value={edge.target}
+          onChange={(e) => changeEndpoint("target", e.target.value)}
+          style={inputStyle}
+        >
+          {nodes.map((n) => (
+            <option key={n.id} value={n.id} disabled={n.id === edge.source}>
+              {nameOf(n)}
+            </option>
+          ))}
+        </select>
+      </Section>
+
+      {endpointError && (
+        <div role="alert" style={{ fontSize: 10, color: "var(--accent-red)", marginTop: -4, marginBottom: 10, lineHeight: 1.4 }}>
+          {endpointError}
+        </div>
+      )}
 
       <Section title="Edge type">
         <div style={{ display: "flex", gap: 6 }}>
