@@ -2,20 +2,25 @@ import { Plus, ChevronRight, Clock, Zap, Users } from "lucide-react";
 import { useUIStore } from "@/store/uiStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { formatTime } from "@/lib/id";
+import { EXAMPLE_TEMPLATES } from "@/data/templates";
 
-const TEMPLATES = [
-  { id: "ecommerce",  name: "E-commerce Platform",        nodes: 11, color: "var(--accent-violet)", emoji: "🛒" },
-  { id: "chat",       name: "Real-Time Chat",              nodes: 8,  color: "var(--accent-blue)",   emoji: "💬" },
-  { id: "url",        name: "URL Shortener",               nodes: 5,  color: "var(--accent-green)",  emoji: "🔗" },
-  { id: "streaming",  name: "Video Streaming",             nodes: 12, color: "var(--accent-amber)",  emoji: "🎬" },
-  { id: "delivery",   name: "Food Delivery",               nodes: 10, color: "var(--accent-red)",    emoji: "🚚" },
-];
+const TEMPLATE_COLORS: Record<string, string> = {
+  ecommerce: "var(--accent-violet)",
+  chat: "var(--accent-blue)",
+  shortener: "var(--accent-green)",
+};
 
 export function Dashboard() {
   const setView     = useUIStore((s) => s.setView);
   const setFailureLabOpen = useUIStore((s) => s.setFailureLabOpen);
   const createNewWorkspace = useWorkspaceStore((s) => s.createNewWorkspace);
 
+  const replaceGraph = useWorkspaceStore((s) => s.replaceGraph);
+
+  const openTemplate = (template: (typeof EXAMPLE_TEMPLATES)[number]) => {
+    replaceGraph(template.graph);
+    setView("workspace");
+  };
   const openNewWorkspace = () => { createNewWorkspace(); setView("workspace"); };
   const openFailureLab = () => {
     setFailureLabOpen(true);
@@ -114,8 +119,15 @@ export function Dashboard() {
             <div>
               <SectionTitle>Start from a Template</SectionTitle>
               <div className="bv-template-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
-                {TEMPLATES.map((t) => (
-                  <TemplateCard key={t.id} {...t} onClick={() => setView("workspace")} />
+                {EXAMPLE_TEMPLATES.map((template) => (
+                  <TemplateCard
+                    key={template.id}
+                    name={template.name}
+                    nodes={template.graph.nodes.length}
+                    color={TEMPLATE_COLORS[template.id] ?? "var(--accent-violet)"}
+                    emoji={template.emoji}
+                    onClick={() => openTemplate(template)}
+                  />
                 ))}
               </div>
             </div>
