@@ -1,0 +1,97 @@
+/* BITverse Landing Motion V6 — liquid, iridescent ribbon refinement. */
+.bv-landing .bv-hero {
+  --bv-hero-motion-x: 0px;
+  --bv-hero-motion-y: 0px;
+  isolation: isolate;
+}
+
+.bv-landing .bv-hero .bv-spectrum-flow--hero {
+  transform: translate3d(var(--bv-hero-motion-x), var(--bv-hero-motion-y), 0) scale(1.035);
+  transform-origin: 50% 50%;
+  transition: transform 680ms cubic-bezier(.2, .72, .18, 1), filter 680ms ease;
+  filter: saturate(1.13) contrast(1.025);
+  will-change: transform;
+}
+
+.bv-landing .bv-hero .bv-liquid-ribbon-glow {
+  stroke-width: 86px !important;
+  opacity: .20;
+  filter: url(#bv-hero-liquid-blur);
+  animation: bv-liquid-glow-breathe 13s ease-in-out infinite alternate;
+}
+
+.bv-landing .bv-hero .bv-liquid-ribbon-band {
+  stroke-width: 36px !important;
+  opacity: .36 !important;
+  filter: drop-shadow(0 0 10px rgba(105, 143, 226, .10));
+}
+
+.bv-landing .bv-hero .bv-liquid-ribbon-sheen {
+  stroke-width: 3.6px !important;
+  opacity: .68 !important;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, .65));
+}
+
+.bv-landing .bv-hero .bv-liquid-ribbon-glow--secondary {
+  stroke-width: 66px !important;
+  opacity: .15;
+  animation-delay: -5.5s;
+}
+
+.bv-landing .bv-hero .bv-liquid-ribbon-band--secondary {
+  stroke-width: 26px !important;
+  opacity: .28 !important;
+}
+
+.bv-landing .bv-hero .bv-liquid-ribbon-sheen--secondary {
+  stroke-width: 2.8px !important;
+  opacity: .62 !important;
+}
+
+.bv-landing .bv-hero .bv-hero-orb--one {
+  animation: bv-aurora-float-one 17s ease-in-out infinite alternate;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.bv-landing .bv-hero .bv-hero-orb--two {
+  animation: bv-aurora-float-two 21s ease-in-out infinite alternate;
+  transform-origin: center;
+  will-change: transform;
+}
+
+@keyframes bv-liquid-glow-breathe {
+  from { opacity: .14; }
+  to { opacity: .26; }
+}
+
+@keyframes bv-aurora-float-one {
+  from { transform: translate3d(-1.2%, -.6%, 0) scale(1); }
+  to { transform: translate3d(1.5%, 1.2%, 0) scale(1.055); }
+}
+
+@keyframes bv-aurora-float-two {
+  from { transform: translate3d(1%, .8%, 0) scale(1.04); }
+  to { transform: translate3d(-1.4%, -1.1%, 0) scale(.985); }
+}
+
+@media (max-width: 760px) {
+  .bv-landing .bv-hero .bv-spectrum-flow--hero {
+    transform: translate3d(0, 0, 0) scale(1.07);
+    transition: none;
+  }
+  .bv-landing .bv-hero .bv-liquid-ribbon-band { stroke-width: 28px !important; }
+  .bv-landing .bv-hero .bv-liquid-ribbon-glow { stroke-width: 68px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bv-landing .bv-hero .bv-spectrum-flow--hero,
+  .bv-landing .bv-hero .bv-hero-orb--one,
+  .bv-landing .bv-hero .bv-hero-orb--two,
+  .bv-landing .bv-hero .bv-liquid-ribbon-glow {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    will-change: auto !important;
+  }
+}

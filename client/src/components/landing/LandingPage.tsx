@@ -31,6 +31,7 @@ import {
 } from "./Doodles";
 import { useScrollReveal } from "@/lib/useScrollReveal";
 import "./LandingPage.css";
+import "./LandingMotionV6.css";
 import "./Doodles.css";
 
 type Feature = {
@@ -115,6 +116,37 @@ export function LandingPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    const hero = heroRef.current;
+    if (!hero || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let frame = 0;
+    const handlePointerMove = (event: PointerEvent) => {
+      if (event.pointerType === "touch") return;
+      const rect = hero.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / Math.max(rect.width, 1) - 0.5;
+      const y = (event.clientY - rect.top) / Math.max(rect.height, 1) - 0.5;
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        hero.style.setProperty("--bv-hero-motion-x", `${(x * 18).toFixed(1)}px`);
+        hero.style.setProperty("--bv-hero-motion-y", `${(y * 12).toFixed(1)}px`);
+      });
+    };
+    const resetPointer = () => {
+      window.cancelAnimationFrame(frame);
+      hero.style.setProperty("--bv-hero-motion-x", "0px");
+      hero.style.setProperty("--bv-hero-motion-y", "0px");
+    };
+
+    hero.addEventListener("pointermove", handlePointerMove, { passive: true });
+    hero.addEventListener("pointerleave", resetPointer);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      hero.removeEventListener("pointermove", handlePointerMove);
+      hero.removeEventListener("pointerleave", resetPointer);
+    };
+  }, []);
+
   return (
     <main className="bv-landing">
       <nav className={`bv-nav${scrolled ? " bv-nav--scrolled" : ""}`} aria-label="Main navigation">
@@ -153,8 +185,17 @@ export function LandingPage() {
               <stop offset="82%" stopColor="#ff5d82" />
               <stop offset="100%" stopColor="#ff9857" />
             </linearGradient>
+            <filter id="bv-hero-liquid-blur" x="-25%" y="-25%" width="150%" height="150%">
+              <feGaussianBlur stdDeviation="8" />
+            </filter>
           </defs>
           <g fill="none" stroke="url(#bv-hero-spectrum)" strokeLinecap="round">
+          <path className="bv-liquid-ribbon-glow" d="M -110 205 C 80 42, 245 44, 370 164 S 575 444, 744 366 S 1001 78, 1176 176 S 1418 414, 1610 250" strokeWidth="86" opacity=".20" filter="url(#bv-hero-liquid-blur)" />
+          <path className="bv-liquid-ribbon-band" d="M -110 205 C 80 42, 245 44, 370 164 S 575 444, 744 366 S 1001 78, 1176 176 S 1418 414, 1610 250" strokeWidth="36" opacity=".36" />
+          <path className="bv-liquid-ribbon-sheen" d="M -110 205 C 80 42, 245 44, 370 164 S 575 444, 744 366 S 1001 78, 1176 176 S 1418 414, 1610 250" strokeWidth="3.6" opacity=".68" />
+          <path className="bv-liquid-ribbon-glow bv-liquid-ribbon-glow--secondary" d="M -90 390 C 135 440, 315 260, 500 320 S 705 445, 890 365 S 1152 230, 1352 310 S 1510 410, 1620 345" strokeWidth="66" opacity=".15" filter="url(#bv-hero-liquid-blur)" />
+          <path className="bv-liquid-ribbon-band bv-liquid-ribbon-band--secondary" d="M -90 390 C 135 440, 315 260, 500 320 S 705 445, 890 365 S 1152 230, 1352 310 S 1510 410, 1620 345" strokeWidth="26" opacity=".28" />
+          <path className="bv-liquid-ribbon-sheen bv-liquid-ribbon-sheen--secondary" d="M -90 390 C 135 440, 315 260, 500 320 S 705 445, 890 365 S 1152 230, 1352 310 S 1510 410, 1620 345" strokeWidth="2.8" opacity=".62" />
             {Array.from({ length: 13 }, (_, index) => (
               <path
                 key={index}
