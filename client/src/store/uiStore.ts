@@ -61,8 +61,32 @@ interface UIState {
   setStickyColor: (color: StickyColor) => void;
 }
 
+// ── URL ↔ view mapping ────────────────────────────────────────────────────
+const VIEW_TO_HASH: Record<AppView, string> = {
+  landing:   "",
+  dashboard: "#dashboard",
+  workspace: "#workspace",
+};
+
+const HASH_TO_VIEW: Record<string, AppView> = {
+  "":           "landing",
+  "#dashboard": "dashboard",
+  "#workspace": "workspace",
+};
+
+function hashToView(hash: string): AppView {
+  return HASH_TO_VIEW[hash] ?? "landing";
+}
+
+/** Read the current URL hash and return the matching view. */
+function viewFromURL(): AppView {
+  if (typeof window === "undefined") return "landing";
+  return hashToView(window.location.hash);
+}
+
 export const useUIStore = create<UIState>((set) => ({
-  view: "landing",
+  // Initialise from the URL so a refresh or direct link lands on the right view.
+  view: viewFromURL(),
   activePanel: null,
   activeTool: "select",
   shapeKind: "rect",
@@ -79,7 +103,17 @@ export const useUIStore = create<UIState>((set) => ({
   strokeWidth: 2.5,
   stickyColor: "yellow",
 
-  setView: (view) => set({ view }),
+  setView: (view) => {
+    // Push a new history entry so the browser back button works.
+    if (typeof window !== "undefined") {
+      const hash = VIEW_TO_HASH[view];
+      const current = window.location.hash || "";
+      if (current !== hash) {
+        window.history.pushState({ view }, "", hash || window.location.pathname);
+      }
+    }
+    set({ view });
+  },
   setActivePanel: (panel) => set((s) => ({ activePanel: s.activePanel === panel ? null : panel })),
   setActiveTool: (activeTool) => set({ activeTool }),
   setShapeKind: (shapeKind) => set({ shapeKind }),
