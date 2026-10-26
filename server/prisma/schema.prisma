@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String             @id @default(uuid()) @db.Uuid
+  email            String             @unique
+  password_hash    String
+  created_at       DateTime           @default(now())
+  
+  workspaces       Workspace[]        @relation("WorkspaceOwner")
+  memberships      WorkspaceMember[]
+  snapshots        Snapshot[]
+  challenges       ChallengeRecord[]
+  queries          Query[]
+}
+
+enum Role {
+  VIEWER
+  EDITOR
+  ADMIN
+}
+
+model Workspace {
+  id               String             @id @default(uuid()) @db.Uuid
+  owner_id         String             @db.Uuid
+  name             String
+  created_at       DateTime           @default(now())
+  
+  owner            User               @relation("WorkspaceOwner", fields: [owner_id], references: [id])
+  members          WorkspaceMember[]
+  snapshots        Snapshot[]
+  challenges       ChallengeRecord[]
+  queries          Query[]
+}
+
+model WorkspaceMember {
+  user_id          String             @db.Uuid
+  workspace_id     String             @db.Uuid
+  role             Role
+  joined_at        DateTime           @default(now())
+
+  user             User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  workspace        Workspace          @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@id([user_id, workspace_id])
+}
+
+model Snapshot {
+  id               String             @id @default(uuid()) @db.Uuid
+  workspace_id     String             @db.Uuid
+  snapshot_name    String
+  crdt_state       Bytes
+  created_by       String             @db.Uuid
+  created_at       DateTime           @default(now())
+
+  workspace        Workspace          @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  author           User               @relation(fields: [created_by], references: [id])
+}
+
+model ChallengeRecord {
+  id               String             @id @default(uuid()) @db.Uuid
+  workspace_id     String             @db.Uuid
+  scenario_type    String
+  nodes_affected   Int
+  attempted_by     String             @db.Uuid
+  timestamp        DateTime           @default(now())
+
+  workspace        Workspace          @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  user             User               @relation(fields: [attempted_by], references: [id])
+}
+
+enum QueryStatus {
+  OPEN
+  RESOLVED
+}
+
+model Query {
+  id               String             @id @default(uuid()) @db.Uuid
+  workspace_id     String             @db.Uuid
+  node_id          String
+  author_id        String             @db.Uuid
+  content          String
+  status           QueryStatus        @default(OPEN)
+  created_at       DateTime           @default(now())
+
+  workspace        Workspace          @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  author           User               @relation(fields: [author_id], references: [id])
+}
