@@ -20,6 +20,10 @@ import { Avatar } from "@/components/ui/Avatar";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useUIStore, type ActivePanel, type ActiveTool, type ShapeToolKind } from "@/store/uiStore";
 import { useSimulationStore } from "@/store/simulationStore";
+import { useAuthStore } from "@/store/authStore";
+import { useWorkspaceSync } from "@/lib/useWorkspaceSync";
+import { startCollabSession } from "@/collaboration/index";
+import { AuthModal } from "@/components/auth/AuthModal";
 import { SHAPES } from "@/lib/canvas";
 import type { WorkspaceMode } from "@/domain/types";
 
@@ -78,6 +82,16 @@ const SHORTCUT_TO_TOOL: Record<string, ActiveTool> = {
 };
 
 export function WorkspaceView() {
+  const { remoteId } = useWorkspaceSync();
+  const { isAuthenticated, user: authUser, serverStatus } = useAuthStore();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+
+  // Start Yjs collaboration when authenticated and we have a remote workspace ID
+  useEffect(() => {
+    if (!isAuthenticated || !remoteId) return;
+    return startCollabSession(remoteId);
+  }, [isAuthenticated, remoteId]);
+
   const workspace = useWorkspaceStore((s) => s.workspace);
   const undoGraph = useWorkspaceStore((s) => s.undoGraph);
   const redoGraph = useWorkspaceStore((s) => s.redoGraph);
@@ -173,6 +187,21 @@ export function WorkspaceView() {
         <button className="bv-invite-btn" onClick={() => setInviteDialogOpen(true)} title="Invite collaborators (local demo — multiplayer is upcoming)" style={inviteBtnStyle}>
           <Users size={12} /> Invite
         </button>
+        {/* Auth button — sign in for cloud sync + real-time collab */}
+        {isAuthenticated ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 8px", background: "var(--surface-2)", borderRadius: "var(--r-sm)", border: "1px solid var(--border)" }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: serverStatus === "online" ? "var(--accent-green)" : "var(--status-degraded)", flexShrink: 0 }} />
+            <span style={{ fontSize: 10, color: "var(--text-secondary)", fontFamily: "var(--font-ui)" }}>{authUser?.name}</span>
+          </div>
+        ) : (
+          <button
+            onClick={() => setAuthModalOpen(true)}
+            title="Sign in to enable cloud sync and real-time collaboration"
+            style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 10px", background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "var(--r-sm)", color: "var(--text-secondary)", fontSize: 11, cursor: "pointer", fontFamily: "var(--font-ui)" }}
+          >
+            Sign in
+          </button>
+        )}
         <Divider />
         <button
           className="bv-health-check-btn"
@@ -324,6 +353,7 @@ export function WorkspaceView() {
       {isHealthCheckOpen && <ArchitectureHealthPanel onClose={() => setHealthCheckOpen(false)} />}
       <RaiseQueryDialog />
       <InviteDialog />
+      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </div>
   );
 }

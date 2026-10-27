@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { ArrowUpRight, ChevronRight, Clock, Zap } from "lucide-react";
 import { useUIStore } from "@/store/uiStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
+import { useAuthStore } from "@/store/authStore";
+import { AuthModal } from "@/components/auth/AuthModal";
 import { formatTime } from "@/lib/id";
 import { EXAMPLE_TEMPLATES } from "@/data/templates";
 
@@ -14,6 +17,8 @@ export function Dashboard() {
   const setView     = useUIStore((s) => s.setView);
   const setFailureLabOpen = useUIStore((s) => s.setFailureLabOpen);
   const createNewWorkspace = useWorkspaceStore((s) => s.createNewWorkspace);
+  const { isAuthenticated, user: authUser, logout } = useAuthStore();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   const replaceGraph = useWorkspaceStore((s) => s.replaceGraph);
 
@@ -65,8 +70,29 @@ export function Dashboard() {
         <button className="bv-landing-start-button" onClick={openNewWorkspace} style={primaryBtnSt}>
           Start building <ArrowUpRight size={14} />
         </button>
+        {isAuthenticated ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-ui)" }}>
+              {authUser?.name}
+            </span>
+            <button
+              onClick={logout}
+              style={{ background: "none", border: "1px solid var(--border)", borderRadius: "var(--r-sm)", padding: "4px 10px", fontSize: 11, color: "var(--text-tertiary)", cursor: "pointer", fontFamily: "var(--font-ui)" }}
+            >
+              Sign out
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setAuthModalOpen(true)}
+            style={{ background: "none", border: "1px solid var(--border)", borderRadius: "var(--r-sm)", padding: "5px 12px", fontSize: 12, color: "var(--text-secondary)", cursor: "pointer", fontFamily: "var(--font-ui)" }}
+          >
+            Sign in
+          </button>
+        )}
         <UserChip />
       </header>
+      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
 
       <main
         className="bv-dashboard-main"

@@ -1,0 +1,150 @@
+// BITverse — Prisma schema
+// Supports PostgreSQL (production) and SQLite (local dev without Docker).
+// Switch by changing DATABASE_URL in .env
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ── Users ─────────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String   @map("password_hash")
+  avatarColor  String   @default("#6c5ce7") @map("avatar_color")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  memberships WorkspaceMember[]
+  queries     Query[]
+  replies     QueryReply[]
+
+  @@map("users")
+}
+
+// ── Workspaces ────────────────────────────────────────────────────────────────
+
+model Workspace {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  /// Serialised CanvasGraph JSON
+  graphJson   String   @default("{}") @map("graph_json")
+  /// Serialised array of FailureScenario[]
+  scenariosJson String  @default("[]") @map("scenarios_json")
+  /// Serialised array of TimelineEvent[]
+  timelineJson  String  @default("[]") @map("timeline_json")
+  mode          String  @default("brainstorm")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  members     WorkspaceMember[]
+  snapshots   Snapshot[]
+  queries     Query[]
+  challenges  ChallengeRecord[]
+
+  @@map("workspaces")
+}
+
+// ── Workspace membership ───────────────────────────────────────────────────────
+
+model WorkspaceMember {
+  id          String   @id @default(cuid())
+  workspaceId String   @map("workspace_id")
+  userId      String   @map("user_id")
+  role        String   @default("editor") // owner | editor | viewer
+  joinedAt    DateTime @default(now()) @map("joined_at")
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
+  @@map("workspace_members")
+}
+
+// ── Snapshots ─────────────────────────────────────────────────────────────────
+
+model Snapshot {
+  id          String   @id @default(cuid())
+  workspaceId String   @map("workspace_id")
+  name        String
+  description String   @default("")
+  /// Serialised CanvasGraph JSON at the time of the snapshot
+  graphJson   String   @map("graph_json")
+  /// Binary Yjs document state (base64 encoded) — populated when collab is active
+  yjsState    String?  @map("yjs_state")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@map("snapshots")
+}
+
+// ── Queries / Discussions ─────────────────────────────────────────────────────
+
+model Query {
+  id          String   @id @default(cuid())
+  workspaceId String   @map("workspace_id")
+  authorId    String   @map("author_id")
+  title       String
+  body        String   @default("")
+  type        String   @default("question") // question | issue | improvement
+  status      String   @default("open")     // open | in-discussion | resolved
+  priority    String   @default("medium")   // low | medium | high | critical
+  targetKind  String   @default("node")     @map("target_kind") // node | edge
+  targetId    String   @map("target_id")
+  assigneeId  String?  @map("assignee_id")
+  resolvedAt  DateTime? @map("resolved_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  author      User         @relation(fields: [authorId], references: [id])
+  replies     QueryReply[]
+
+  @@index([workspaceId])
+  @@index([authorId])
+  @@map("queries")
+}
+
+model QueryReply {
+  id        String   @id @default(cuid())
+  queryId   String   @map("query_id")
+  authorId  String   @map("author_id")
+  body      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  query     Query @relation(fields: [queryId], references: [id], onDelete: Cascade)
+  author    User  @relation(fields: [authorId], references: [id])
+
+  @@index([queryId])
+  @@map("query_replies")
+}
+
+// ── Failure Lab challenge records ─────────────────────────────────────────────
+
+model ChallengeRecord {
+  id            String   @id @default(cuid())
+  workspaceId   String   @map("workspace_id")
+  scenarioId    String   @map("scenario_id")
+  scenarioName  String   @map("scenario_name")
+  affectedNodes String   @default("[]") @map("affected_nodes") // JSON array of node IDs
+  outcome       String   @default("ran")                        // ran | improved
+  impactScore   Float    @default(0) @map("impact_score")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@map("challenge_records")
+}

@@ -2,13 +2,24 @@
   "name": "bitverse-root",
   "private": true,
   "version": "0.0.0",
-  "workspaces": [
-    "client",
-    "server"
-  ],
+  "workspaces": {
+    "packages": ["client", "server"],
+    "nohoist": [
+      "server/prisma",
+      "server/@prisma",
+      "server/@prisma/**",
+      "server/prisma/**"
+    ]
+  },
   "scripts": {
     "dev": "npm run dev --workspace=client",
+    "dev:server": "npm run dev --workspace=server",
     "build": "npm run build --workspace=client",
-    "typecheck": "npm run typecheck --workspace=client"
+    "build:server": "npm run build --workspace=server",
+    "typecheck": "npm run typecheck --workspace=client && npm run typecheck --workspace=server",
+    "test:server": "npm run test --workspace=server",
+    "server:migrate": "npm run db:migrate --workspace=server",
+    "server:seed": "npm run db:seed --workspace=server",
+    "server:generate": "npm run db:generate --workspace=server"
   }
 }

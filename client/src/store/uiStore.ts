@@ -44,6 +44,7 @@ interface UIState {
   stickyColor: StickyColor;
 
   setView: (view: AppView) => void;
+  restoreViewFromHistory: (view: AppView) => void;
   setActivePanel: (panel: ActivePanel) => void;
   setActiveTool: (tool: ActiveTool) => void;
   setShapeKind: (kind: ShapeToolKind) => void;
@@ -79,7 +80,34 @@ export const useUIStore = create<UIState>((set) => ({
   strokeWidth: 2.5,
   stickyColor: "yellow",
 
-  setView: (view) => set({ view }),
+  setView: (view) =>
+    set((state) => {
+      // Do not add duplicate history entries when a button selects the current view.
+      if (state.view === view) return state;
+
+      if (typeof window !== "undefined") {
+        const rawState = window.history.state;
+        const baseState: Record<string, unknown> =
+          rawState && typeof rawState === "object" && !Array.isArray(rawState)
+            ? (rawState as Record<string, unknown>)
+            : {};
+        const rawBitverse = baseState.__bitverse;
+        const bitverseState: Record<string, unknown> =
+          rawBitverse && typeof rawBitverse === "object" && !Array.isArray(rawBitverse)
+            ? (rawBitverse as Record<string, unknown>)
+            : {};
+
+        window.history.pushState(
+          { ...baseState, __bitverse: { ...bitverseState, view } },
+          "",
+          window.location.href,
+        );
+      }
+
+      return { view };
+    }),
+  // Popstate must update Zustand without creating another browser-history entry.
+  restoreViewFromHistory: (view) => set({ view }),
   setActivePanel: (panel) => set((s) => ({ activePanel: s.activePanel === panel ? null : panel })),
   setActiveTool: (activeTool) => set({ activeTool }),
   setShapeKind: (shapeKind) => set({ shapeKind }),

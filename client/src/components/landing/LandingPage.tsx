@@ -15,6 +15,8 @@ import {
   Zap,
 } from "lucide-react";
 import { useUIStore } from "@/store/uiStore";
+import { useAuthStore } from "@/store/authStore";
+import { AuthModal } from "@/components/auth/AuthModal";
 import { ArchPreview } from "./ArchPreview";
 import {
   SquiggleArrow,
@@ -88,6 +90,8 @@ const STEPS = [
 export function LandingPage() {
   const setView = useUIStore((s) => s.setView);
   const setFailureLabOpen = useUIStore((s) => s.setFailureLabOpen);
+  const { isAuthenticated, user: authUser } = useAuthStore();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const openWorkspace = () => setView("workspace");
@@ -164,12 +168,19 @@ export function LandingPage() {
         </div>
 
         <div className="bv-nav-actions">
-          <button className="bv-nav-signin" onClick={() => setView("dashboard")}>Open dashboard</button>
+          {isAuthenticated ? (
+            <button className="bv-nav-signin" onClick={() => setView("dashboard")}>
+              {authUser?.name ?? "Dashboard"}
+            </button>
+          ) : (
+            <button className="bv-nav-signin" onClick={() => setAuthModalOpen(true)}>Sign in</button>
+          )}
           <button className="bv-button bv-button--nav" onClick={() => setView("workspace")}>
             Start building <ArrowUpRight size={15} />
           </button>
         </div>
       </nav>
+      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
 
       {/* ─────────────────────── HERO ─────────────────────────────────────── */}
       <section className="bv-hero" id="top" ref={heroRef}>
